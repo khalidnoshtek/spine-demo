@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:#000;}
+  ::-webkit-scrollbar{display:none;}
+  @keyframes floaty{0%{transform:translateY(0);opacity:0;}10%{opacity:.7;}90%{opacity:.7;}100%{transform:translateY(-70px);opacity:0;}}
+  @keyframes pulseGlow{0%,100%{opacity:.45;}50%{opacity:.85;}}
+  @keyframes scanSweep{0%{top:14%;opacity:0;}8%{opacity:1;}92%{opacity:1;}100%{top:74%;opacity:0;}}
+  @keyframes scanFill{0%{width:0;}100%{width:100%;}}
+  @keyframes ringPulse{0%{transform:scale(.6);opacity:.9;}100%{transform:scale(2.6);opacity:0;}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes poseIn{from{opacity:0;}to{opacity:1;}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(140% 100% at 50% 0%,#0a1426 0%,#000 70%);padding:0;font-family:'Sora',system-ui,sans-serif;">
+  <div style="position:relative;width:390px;height:844px;border-radius:46px;overflow:hidden;background:radial-gradient(125% 85% at 50% 16%,#08284f 0%,#051838 34%,#020c1e 62%,#00040d 100%);box-shadow:0 50px 130px rgba(0,50,110,.45),inset 0 0 0 1px rgba(120,180,255,.09);color:#eaf2ff;">
+
+    <!-- grid -->
+    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(95,170,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(95,170,255,.07) 1px,transparent 1px);background-size:30px 30px;-webkit-mask-image:radial-gradient(75% 60% at 50% 42%,#000 0%,transparent 85%);mask-image:radial-gradient(75% 60% at 50% 42%,#000 0%,transparent 85%);"></div>
+    <!-- ambient glow -->
+    <div style="position:absolute;left:50%;top:36%;width:340px;height:340px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(40,120,220,.32) 0%,rgba(20,70,150,.12) 45%,transparent 70%);filter:blur(8px);"></div>
+    <!-- particles -->
+    <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">{{ particles }}</div>
+
+    <!-- HERO -->
+    <div onPointerDown="{{ stageDown }}" style="position:absolute;left:0;right:0;top:96px;bottom:188px;perspective:1300px;cursor:grab;touch-action:none;">
+      <div ref="{{ innerRef }}" style="width:100%;height:100%;transform-style:preserve-3d;will-change:transform;">{{ hero }}</div>
+      <!-- pain region taps live on the spine itself (rendered in {{ hero }}) -->
+      <!-- scan line -->
+      <sc-if value="{{ scanning }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,#6fe0ff,transparent);box-shadow:0 0 18px 3px rgba(110,224,255,.7);animation:scanSweep 2.5s linear forwards;"></div>
+      </sc-if>
+      <!-- wearable sync ring -->
+      <sc-if value="{{ syncing }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:50%;top:46%;width:120px;height:120px;margin:-60px 0 0 -60px;border:2px solid rgba(110,224,255,.8);border-radius:50%;animation:ringPulse 1.4s ease-out infinite;"></div>
+      </sc-if>
+    </div>
+
+    <!-- TOP HUD -->
+    <div style="position:absolute;left:0;right:0;top:0;padding:14px 24px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500;letter-spacing:.3px;color:#cfe0f5;">
+        <span>9:41</span>
+        <span style="display:flex;gap:6px;align-items:center;opacity:.85;font-size:11px;">SPINEVERSE
+          <span style="width:22px;height:11px;border:1px solid rgba(207,224,245,.6);border-radius:3px;display:inline-block;position:relative;"><span style="position:absolute;inset:1.5px;width:70%;background:#cfe0f5;border-radius:1px;"></span></span>
+        </span>
+      </div>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px;">
+        <button onClick="{{ back }}" style="width:30px;height:30px;flex:none;border-radius:50%;border:1px solid rgba(120,180,255,.22);background:rgba(10,28,56,.5);color:#bcd4f0;font-size:15px;cursor:pointer;opacity:{{ backOpacity }};">‹</button>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:2px;color:#7e96b8;text-transform:uppercase;margin-bottom:6px;">
+            <span>Step {{ stepNum }} / 10</span><span>{{ stepLabel }}</span>
+          </div>
+          <div style="height:3px;border-radius:3px;background:rgba(120,170,235,.14);overflow:hidden;">
+            <div style="height:100%;border-radius:3px;background:linear-gradient(90deg,#2a86c8,#6fe0ff);box-shadow:0 0 10px rgba(110,224,255,.6);width:{{ progressPct }}%;transition:width .5s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM PANEL -->
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:0 18px 26px;background:linear-gradient(180deg,rgba(2,10,26,0) 0%,rgba(2,10,26,.55) 26%,rgba(2,8,20,.92) 58%);">
+      <div style="background:rgba(11,26,52,.55);border:1px solid rgba(120,180,255,.15);border-radius:24px;padding:20px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 20px 50px rgba(0,20,50,.5);">
+
+        <!-- MEET -->
+        <sc-if value="{{ isMeet }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:10px;">Spine Lab · Assessment</div>
+          <div style="font-size:27px;font-weight:600;line-height:1.1;margin-bottom:8px;">Meet your spine.</div>
+          <div style="font-size:13.5px;line-height:1.5;color:#9fb4d2;">A short, guided lab scan that maps how your daily habits shape spinal health — then gives you one number to track.</div>
+        </sc-if>
+
+        <!-- PAIN -->
+        <sc-if value="{{ isPain }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Pain map</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:6px;">Where does it hurt?</div>
+          <div style="font-size:13px;line-height:1.5;color:#9fb4d2;margin-bottom:12px;">Tap the regions on the model where you feel pain or tension.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;min-height:26px;">
+            <sc-for list="{{ painChips }}" as="c" hint-placeholder-count="2">
+              <span style="font-size:11px;letter-spacing:.5px;padding:6px 11px;border-radius:20px;background:rgba(255,90,80,.14);border:1px solid rgba(255,120,100,.45);color:#ffb3a8;">{{ c }}</span>
+            </sc-for>
+            <sc-if value="{{ noPain }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:12px;color:#6f86a6;">No regions flagged — tap to add, or continue.</span>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- SLEEP -->
+        <sc-if value="{{ isSleep }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Sleep</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:14px;">How do you sleep?</div>
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <button onClick="{{ sleepSide }}" style="{{ sstyle.side }}">Side</button>
+            <button onClick="{{ sleepBack }}" style="{{ sstyle.back }}">Back</button>
+            <button onClick="{{ sleepStomach }}" style="{{ sstyle.stomach }}">Stomach</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:1px;color:#8ba3c2;margin-bottom:8px;text-transform:uppercase;"><span>Hours / night</span><span style="color:#dff2ff;font-variant-numeric:tabular-nums;font-size:13px;">{{ sleepHrsLbl }} h</span></div>
+          <div onPointerDown="{{ slideSleep }}" style="padding:9px 0;cursor:pointer;touch-action:none;">
+            <div style="position:relative;height:4px;border-radius:4px;background:rgba(120,170,235,.16);">
+              <div style="position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#2a86c8,#6fe0ff);width:{{ sleepPct }}%;"></div>
+              <div style="position:absolute;top:50%;left:{{ sleepPct }}%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#dff2ff;box-shadow:0 0 12px rgba(110,224,255,.8);"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- SITTING -->
+        <sc-if value="{{ isSit }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Desk load</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:4px;">Sitting hours per day</div>
+          <div style="font-size:12.5px;line-height:1.5;color:#9fb4d2;margin-bottom:16px;">Prolonged sitting flattens the lumbar curve and loads the lower discs.</div>
+          <div style="display:flex;justify-content:flex-end;font-size:28px;font-weight:600;color:#dff2ff;font-variant-numeric:tabular-nums;margin-bottom:4px;">{{ sitHrs }}<span style="font-size:14px;color:#8ba3c2;margin:10px 0 0 4px;">hrs</span></div>
+          <div onPointerDown="{{ slideSit }}" style="padding:9px 0;cursor:pointer;touch-action:none;">
+            <div style="position:relative;height:4px;border-radius:4px;background:rgba(120,170,235,.16);">
+              <div style="position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#2a86c8,#ffb020);width:{{ sitPct }}%;"></div>
+              <div style="position:absolute;top:50%;left:{{ sitPct }}%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#dff2ff;box-shadow:0 0 12px rgba(255,176,32,.7);"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- MOVEMENT -->
+        <sc-if value="{{ isMove }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Movement</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:4px;">Daily activity</div>
+          <div style="font-size:12.5px;line-height:1.5;color:#9fb4d2;margin-bottom:16px;">Walking nourishes the discs. Aim for ~8,000 steps a day.</div>
+          <div style="display:flex;justify-content:flex-end;font-size:28px;font-weight:600;color:#dff2ff;font-variant-numeric:tabular-nums;margin-bottom:4px;">{{ stepsLbl }}<span style="font-size:14px;color:#8ba3c2;margin:10px 0 0 5px;">steps</span></div>
+          <div onPointerDown="{{ slideSteps }}" style="padding:9px 0;cursor:pointer;touch-action:none;">
+            <div style="position:relative;height:4px;border-radius:4px;background:rgba(120,170,235,.16);">
+              <div style="position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#2a86c8,#36e0a1);width:{{ stepPct }}%;"></div>
+              <div style="position:absolute;top:50%;left:{{ stepPct }}%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#dff2ff;box-shadow:0 0 12px rgba(54,224,161,.7);"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- LIFTING -->
+        <sc-if value="{{ isLift }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Lifting</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:4px;">Heaviest regular lift</div>
+          <div style="font-size:12.5px;line-height:1.5;color:#9fb4d2;margin-bottom:16px;">Load concentrates at <span style="color:#ffb020;font-weight:600;">L4–L5</span> when you bend and lift.</div>
+          <div style="display:flex;justify-content:flex-end;font-size:28px;font-weight:600;color:#dff2ff;font-variant-numeric:tabular-nums;margin-bottom:4px;">{{ lift }}<span style="font-size:14px;color:#8ba3c2;margin:10px 0 0 4px;">kg</span></div>
+          <div onPointerDown="{{ slideLift }}" style="padding:9px 0;cursor:pointer;touch-action:none;">
+            <div style="position:relative;height:4px;border-radius:4px;background:rgba(120,170,235,.16);">
+              <div style="position:absolute;left:0;top:0;height:100%;border-radius:4px;background:linear-gradient(90deg,#2a86c8,#ff5a5a);width:{{ liftPct }}%;"></div>
+              <div style="position:absolute;top:50%;left:{{ liftPct }}%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#dff2ff;box-shadow:0 0 12px rgba(255,90,90,.7);"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- WEARABLE -->
+        <sc-if value="{{ isWear }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Wearable</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:6px;">Sync your device</div>
+          <sc-if value="{{ notSynced }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12.5px;line-height:1.5;color:#9fb4d2;margin-bottom:14px;">Pull posture &amp; activity signals straight into the model.</div>
+            <button onClick="{{ sync }}" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(120,205,255,.5);background:rgba(60,150,230,.16);color:#dff2ff;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;">Sync device</button>
+          </sc-if>
+          <sc-if value="{{ synced }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:10px;margin-top:6px;">
+              <div style="flex:1;background:rgba(8,22,44,.5);border:1px solid rgba(120,180,255,.14);border-radius:14px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:600;color:#dff2ff;font-variant-numeric:tabular-nums;">62</div><div style="font-size:9px;letter-spacing:1px;color:#7e96b8;text-transform:uppercase;margin-top:3px;">BPM</div></div>
+              <div style="flex:1;background:rgba(8,22,44,.5);border:1px solid rgba(120,180,255,.14);border-radius:14px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:600;color:#36e0a1;">Good</div><div style="font-size:9px;letter-spacing:1px;color:#7e96b8;text-transform:uppercase;margin-top:3px;">Posture</div></div>
+              <div style="flex:1;background:rgba(8,22,44,.5);border:1px solid rgba(120,180,255,.14);border-radius:14px;padding:12px;text-align:center;"><div style="font-size:22px;font-weight:600;color:#dff2ff;font-variant-numeric:tabular-nums;">14</div><div style="font-size:9px;letter-spacing:1px;color:#7e96b8;text-transform:uppercase;margin-top:3px;">Active hrs</div></div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <!-- SCAN -->
+        <sc-if value="{{ isScan }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:8px;">Scan</div>
+          <div style="font-size:21px;font-weight:600;margin-bottom:6px;">Spinal scan</div>
+          <sc-if value="{{ scanIdle }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12.5px;line-height:1.5;color:#9fb4d2;margin-bottom:14px;">Sweep the model to reveal each segment and compile your score.</div>
+            <button onClick="{{ runScan }}" style="width:100%;padding:14px;border-radius:14px;border:1px solid rgba(120,205,255,.5);background:rgba(60,150,230,.16);color:#dff2ff;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;">Run scan</button>
+          </sc-if>
+          <sc-if value="{{ scanning }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12px;letter-spacing:1px;color:#8ba3c2;text-transform:uppercase;margin-bottom:10px;">Scanning segments…</div>
+            <div style="height:4px;border-radius:4px;background:rgba(120,170,235,.16);overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,#2a86c8,#6fe0ff);animation:scanFill 2.5s linear forwards;"></div></div>
+          </sc-if>
+          <sc-if value="{{ scanDone }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;color:#36e0a1;font-size:14px;font-weight:600;"><span style="width:22px;height:22px;border-radius:50%;background:rgba(54,224,161,.16);border:1px solid #36e0a1;display:flex;align-items:center;justify-content:center;font-size:12px;">✓</span>Scan complete — 24 segments mapped</div>
+          </sc-if>
+        </sc-if>
+
+        <!-- SCORE -->
+        <sc-if value="{{ isScore }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:18px;">
+            <div style="position:relative;width:124px;height:124px;flex:none;">
+              <svg width="124" height="124" viewBox="0 0 124 124">
+                <circle cx="62" cy="62" r="54" fill="none" stroke="rgba(120,170,235,.14)" stroke-width="9"></circle>
+                <circle ref="{{ gaugeRef }}" cx="62" cy="62" r="54" fill="none" stroke="#36e0a1" stroke-width="9" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" transform="rotate(-90 62 62)"></circle>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div ref="{{ scoreRef }}" style="font-size:34px;font-weight:600;color:#eaf2ff;font-variant-numeric:tabular-nums;line-height:1;">0</div>
+                <div style="font-size:8px;letter-spacing:2px;color:#7e96b8;text-transform:uppercase;margin-top:3px;">Spine score</div>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:9px;">
+              <sc-for list="{{ regionBars }}" as="r" hint-placeholder-count="3">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:10px;letter-spacing:1px;color:#9fb4d2;text-transform:uppercase;margin-bottom:4px;"><span>{{ r.name }}</span><span style="color:#dff2ff;">{{ r.val }}</span></div>
+                  <div style="height:5px;border-radius:5px;background:rgba(120,170,235,.14);overflow:hidden;"><div style="height:100%;border-radius:5px;background:{{ r.color }};width:{{ r.pct }}%;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- DASHBOARD -->
+        <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+            <div><div style="font-size:10px;letter-spacing:3px;color:#6fb8e8;text-transform:uppercase;margin-bottom:6px;">Your report</div><div style="font-size:20px;font-weight:600;">Spine health</div></div>
+            <div style="text-align:right;"><div style="font-size:32px;font-weight:600;color:{{ scoreColor }};line-height:1;font-variant-numeric:tabular-nums;">{{ scoreVal }}</div><div style="font-size:9px;letter-spacing:1px;color:#7e96b8;text-transform:uppercase;">{{ scoreBand }}</div></div>
+          </div>
+          <div style="font-size:9px;letter-spacing:2px;color:#7e96b8;text-transform:uppercase;margin-bottom:8px;">Top risks</div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;">
+            <sc-for list="{{ risks }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(8,22,44,.5);border:1px solid rgba(120,180,255,.12);border-radius:12px;padding:10px 12px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:{{ r.color }};flex:none;box-shadow:0 0 8px {{ r.color }};"></span>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:#e6f0ff;">{{ r.t }}</div><div style="font-size:11px;color:#8ba3c2;">{{ r.d }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:9px;letter-spacing:2px;color:#7e96b8;text-transform:uppercase;margin-bottom:8px;">Recommended</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <sc-for list="{{ recs }}" as="x" hint-placeholder-count="2">
+              <div style="display:flex;gap:9px;font-size:12.5px;color:#bcd2ee;align-items:flex-start;"><span style="color:#6fe0ff;">→</span><span>{{ x }}</span></div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- CTA -->
+        <sc-if value="{{ showCta }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ cta }}" style="width:100%;margin-top:18px;padding:15px;border-radius:15px;border:1px solid rgba(120,205,255,.55);background:linear-gradient(90deg,rgba(42,134,200,.32),rgba(110,224,255,.22));color:#f2faff;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 24px rgba(30,110,190,.3);">{{ ctaLabel }}</button>
+        </sc-if>
+
+      </div>
+    </div>
+
+    <!-- vignette -->
+    <div style="position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 30px rgba(0,4,13,.6);border-radius:46px;"></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  state = {
+    i: 0,
+    pain: { neck:false, upper:false, mid:false, lower:false },
+    sleepPos:'side', sleepHrs:7,
+    sitHrs:8, steps:6000, lift:15,
+    synced:false, syncing:false,
+    scanPhase:'idle', // idle | scanning | done
+    scanShown:false,
+  };
+  screens = ['meet','pain','sleep','sitting','movement','lifting','wearable','scan','score','dashboard'];
+  labels  = ['Meet','Pain map','Sleep','Sitting','Movement','Lifting','Wearable','Scan','Score','Report'];
+
+  innerRef = React.createRef();
+  scoreRef = React.createRef();
+  gaugeRef = React.createRef();
+
+  // ---------- lifecycle ----------
+  componentDidMount(){
+    this.dragRot = -6; this.t0 = performance.now();
+    const loop = (t)=>{
+      this._raf = requestAnimationFrame(loop);
+      const el = this.innerRef.current; if(!el) return;
+      const a = Math.sin((t-this.t0)/3800)*4;
+      const fy = Math.sin((t-this.t0)/2600)*6;
+      el.style.transform = `translateY(${fy}px) rotateY(${a + this.dragRot}deg)`;
+    };
+    this._raf = requestAnimationFrame(loop);
+  }
+  componentWillUnmount(){ if(this._raf) cancelAnimationFrame(this._raf); }
+  // ---------- nav ----------
+  goScreen(n){
+    n=Math.max(0,Math.min(9,n)); const s=this.screens[n];
+    const patch={i:n};
+    if(s==='scan' && this.state.scanPhase!=='done'){ patch.scanPhase='idle'; patch.scanShown=false; }
+    this.setState(patch);
+    if(s==='score') setTimeout(()=>this.animScore(), 160);
+  }
+  cta(){ const n=this.screens[this.state.i]; if(n==='dashboard'){ this.reset(); } else { this.goScreen(this.state.i+1); } }
+  back(){ if(this.state.i>0) this.goScreen(this.state.i-1); }
+  reset(){ this.setState({ i:0, pain:{neck:false,upper:false,mid:false,lower:false}, sleepPos:'side', sleepHrs:7, sitHrs:8, steps:6000, lift:15, synced:false, syncing:false, scanPhase:'idle', scanShown:false }); this.animatePose(this.poseParams('meet')); }
+
+  // ---------- interactions ----------
+  togglePain(r){ const p={...this.state.pain}; p[r]=!p[r]; this.setState({pain:p}); }
+  setSleep(v){ this.setState({sleepPos:v}); }
+  sync(){ this.setState({syncing:true}); setTimeout(()=>this.setState({syncing:false, synced:true}), 1600); }
+  runScan(){ this.setState({scanPhase:'scanning', scanShown:false}); setTimeout(()=>this.setState({scanShown:true}), 120); setTimeout(()=>this.setState({scanPhase:'done'}), 2550); }
+
+  slider(e, key, min, max, step){
+    const track = e.currentTarget.querySelector('div');
+    const rect = track.getBoundingClientRect();
+    const upd = (cx)=>{ let p=(cx-rect.left)/rect.width; p=Math.max(0,Math.min(1,p)); let v=min+p*(max-min); v=Math.round(v/step)*step; this.setState({[key]:v}); };
+    upd(e.clientX);
+    const mv=(ev)=>upd(ev.clientX);
+    const up=()=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); };
+    document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+  }
+  stageDown(e){
+    if(e.target.closest('button')) return;
+    const base=this.dragRot||0, x0=e.clientX;
+    const mv=(ev)=>{ this.dragRot=Math.max(-42,Math.min(42, base+(ev.clientX-x0)*0.35)); };
+    const up=()=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); };
+    document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+  }
+
+  // ---------- scoring ----------
+  computeScore(){
+    const s=this.state; let p=0;
+    p += Object.values(s.pain).filter(Boolean).length*6;
+    if(s.sitHrs>6) p+=(s.sitHrs-6)*3;
+    p += ({side:0,back:5,stomach:11})[s.sleepPos]||0;
+    if(s.sleepHrs<6.5) p+=(6.5-s.sleepHrs)*3;
+    if(s.steps<8000) p+=(8000-s.steps)/8000*16;
+    if(s.lift>20) p+=(s.lift-20)*0.7;
+    return Math.round(Math.max(34,Math.min(98,100-p)));
+  }
+  regionScores(){
+    const s=this.state, cl=(v)=>Math.round(Math.max(22,Math.min(99,v)));
+    let c=96,t=96,l=96;
+    if(s.pain.neck)c-=30; if(s.pain.upper)t-=22; if(s.pain.mid)t-=18; if(s.pain.lower)l-=30;
+    if(s.sitHrs>6){ l-=(s.sitHrs-6)*3.5; t-=(s.sitHrs-6)*1.4; }
+    if(s.lift>20) l-=(s.lift-20)*1.0;
+    if(s.sleepPos==='stomach'){ c-=12; l-=8; } if(s.sleepPos==='back') c-=4;
+    if(s.steps<8000){ const d=(8000-s.steps)/8000; l-=d*12; t-=d*8; }
+    return { c:cl(c), t:cl(t), l:cl(l) };
+  }
+  scColor(v){ return v>72?'#36e0a1':v>50?'#ffb020':'#ff5a5a'; }
+
+  animScore(){
+    const target=this.computeScore(), reg=this.regionScores();
+    const col=this.scColor(Math.round((reg.c+reg.t+reg.l)/3));
+    if(this.gaugeRef.current) this.gaugeRef.current.style.stroke=col;
+    const C=2*Math.PI*54, start=performance.now(), dur=1700;
+    const setVal=(v)=>{ if(this.scoreRef.current) this.scoreRef.current.textContent=Math.round(v); if(this.gaugeRef.current) this.gaugeRef.current.style.strokeDashoffset=C*(1-(target/100)*(v/(target||1))); };
+    const step=(t)=>{ const k=Math.min(1,(t-start)/dur), e=1-Math.pow(1-k,3);
+      setVal(target*e);
+      if(k<1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    // fallback: show final value even if rAF is throttled
+    if(this._scoreTo) clearTimeout(this._scoreTo);
+    this._scoreTo=setTimeout(()=>setVal(target), dur+150);
+  }
+
+  // ---------- geometry ----------
+  cr(A, dens){
+    const P=(k)=>A[Math.max(0,Math.min(A.length-1,k))], pts=[];
+    for(let s=0;s<A.length-1;s++){
+      const p0=P(s-1),p1=P(s),p2=P(s+1),p3=P(s+2), steps=dens;
+      for(let j=0;j<steps;j++){ const t=j/steps,t2=t*t,t3=t2*t;
+        pts.push({ x:0.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),
+                   y:0.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3) }); }
+    }
+    pts.push(A[A.length-1]); return pts;
+  }
+  spineLayout(anchors, N){
+    const poly=this.cr(anchors,26), L=[0];
+    for(let k=1;k<poly.length;k++) L.push(L[k-1]+Math.hypot(poly[k].x-poly[k-1].x, poly[k].y-poly[k-1].y));
+    const total=L[L.length-1], out=[];
+    for(let v=0;v<N;v++){ const d=total*(v/(N-1)); let k=1; while(k<L.length-1 && L[k]<d) k++;
+      const t=(d-L[k-1])/((L[k]-L[k-1])||1);
+      out.push({ x:poly[k-1].x+(poly[k].x-poly[k-1].x)*t, y:poly[k-1].y+(poly[k].y-poly[k-1].y)*t,
+                 a:Math.atan2(poly[k].y-poly[k-1].y, poly[k].x-poly[k-1].x) }); }
+    return out;
+  }
+
+  poses(){
+    const stand=[{x:150,y:100},{x:148,y:152},{x:151,y:232},{x:154,y:318},{x:151,y:406},{x:147,y:496},{x:150,y:556}];
+    const lie=[{x:74,y:340},{x:110,y:342},{x:148,y:346},{x:186,y:352},{x:218,y:357},{x:242,y:360},{x:260,y:362}];
+    const sit=[{x:154,y:120},{x:153,y:158},{x:152,y:202},{x:155,y:244},{x:162,y:280},{x:170,y:304},{x:176,y:318}];
+    const bend=[{x:236,y:302},{x:210,y:289},{x:184,y:281},{x:166,y:285},{x:154,y:294},{x:149,y:303},{x:147,y:310}];
+    const run=[{x:160,y:108},{x:157,y:144},{x:155,y:186},{x:153,y:228},{x:151,y:268},{x:150,y:296},{x:152,y:312}];
+    const S=(sp,body)=>({sp,body,ur:0});
+    return {
+      meet:S(stand,'stand'), pain:S(stand,'stand'), wearable:S(stand,'stand'),
+      scan:S(stand,'stand'), score:S(stand,'stand'), dashboard:S(stand,'stand'),
+      movement:S(run,'run'),
+      sleep:S(lie,'lie'), sitting:S(sit,'sit'), lifting:S(bend,'bend'),
+    };
+  }
+
+  poseParams(name){ const p=this.poses()[name]||this.poses().meet; return {sp:p.sp.map(q=>({...q})), body:p.body, ur:p.ur}; }
+  animatePose(target){
+    if(!this.curPose){ this.curPose=this.poseParams(this.screens[this.state.i]); }
+    const from={sp:this.curPose.sp.map(q=>({...q})), ur:this.curPose.ur};
+    const tgt={sp:target.sp.map(q=>({...q})), ur:target.ur};
+    this.prevBody=this.curPose.body; this.curBody=target.body; this.bodyT=0;
+    const start=performance.now(), dur=820;
+    if(this._poseRaf) cancelAnimationFrame(this._poseRaf);
+    if(this._poseTo) clearTimeout(this._poseTo);
+    const bump=()=>this.setState({_pt:(this._pt=(this._pt||0)+1)});
+    const finish=()=>{ this.curPose={sp:tgt.sp.map(q=>({...q})), ur:tgt.ur, body:this.curBody}; this.bodyT=1; this.prevBody=this.curBody; bump(); };
+    const step=(t)=>{
+      const k=Math.min(1,(t-start)/dur);
+      if(k>=1){ finish(); return; }
+      const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      const cp={sp:[],ur:from.ur+(tgt.ur-from.ur)*e,body:this.curBody};
+      for(let i=0;i<from.sp.length;i++) cp.sp.push({x:from.sp[i].x+(tgt.sp[i].x-from.sp[i].x)*e, y:from.sp[i].y+(tgt.sp[i].y-from.sp[i].y)*e});
+      this.curPose=cp; this.bodyT=e; bump();
+      this._poseRaf=requestAnimationFrame(step);
+    };
+    this._poseRaf=requestAnimationFrame(step);
+    // fallback: guarantee correct resting pose even if rAF is throttled (background/hidden tab)
+    this._poseTo=setTimeout(finish, dur+180);
+  }
+
+  // ---------- figure (skeleton → smooth glass body) ----------
+  circ(cx,cy,r){ return `M ${(cx-r).toFixed(1)} ${cy.toFixed(1)} A ${r} ${r} 0 1 0 ${(cx+r).toFixed(1)} ${cy.toFixed(1)} A ${r} ${r} 0 1 0 ${(cx-r).toFixed(1)} ${cy.toFixed(1)} Z `; }
+  cap(ax,ay,bx,by,wa,wb){
+    const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1, nx=-dy/L,ny=dx/L, ra=wa/2,rb=wb/2;
+    const f=(n)=>n.toFixed(1);
+    return `M ${f(ax+nx*ra)} ${f(ay+ny*ra)} L ${f(bx+nx*rb)} ${f(by+ny*rb)} `
+         + `A ${rb} ${rb} 0 0 1 ${f(bx-nx*rb)} ${f(by-ny*rb)} L ${f(ax-nx*ra)} ${f(ay-ny*ra)} `
+         + `A ${ra} ${ra} 0 0 1 ${f(ax+nx*ra)} ${f(ay+ny*ra)} Z `;
+  }
+  mirror(rp){
+    const A=rp.map(p=>({x:p[0],y:p[1]}));
+    const poly=this.cr(A,16);
+    let d='M '+poly.map(p=>p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' L ');
+    for(let k=poly.length-1;k>=0;k--) d+=' L '+(300-poly[k].x).toFixed(1)+' '+poly[k].y.toFixed(1);
+    return d+' Z';
+  }
+  loop(pts){
+    const A=pts.map(p=>({x:p[0],y:p[1]}));
+    const poly=this.cr(A,14);
+    return 'M '+poly.map(p=>p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' L ')+' Z';
+  }
+  seg(lines){
+    let d='';
+    lines.forEach(pl=>{ const A=pl.map(p=>({x:p[0],y:p[1]})); const poly=this.cr(A,9);
+      d+='M '+poly.map(p=>p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' L ')+' '; });
+    return d;
+  }
+  mir(lines){ return lines.map(pl=>pl.map(p=>[300-p[0],p[1]])); }
+  buildBodyDetail(name){
+    if(name==='stand'){
+      const R=[
+        [[150,108],[184,120],[214,142]],
+        [[204,172],[228,204],[216,246]],
+        [[216,264],[208,330],[200,392]],
+        [[166,424],[168,506]],
+        [[240,292],[226,352],[206,402]]
+      ];
+      const C=[[[150,560],[150,594]]];
+      return {d:this.seg([...R,...this.mir(R),...C]), dots:[[172,524,3.2,3.2],[128,524,3.2,3.2]]};
+    }
+    if(name==='run'){
+      return {d:this.seg([
+        [[170,135],[178,185],[185,250]],[[168,140],[182,150]],
+        [[195,295],[218,318],[232,338]],[[226,360],[230,400]],
+        [[150,320],[128,350]],[[108,365],[92,398]],
+        [[160,300],[152,272]]
+      ]), dots:[]};
+    }
+    if(name==='sit'){
+      return {d:this.seg([
+        [[166,132],[172,180],[173,240]],[[164,150],[176,158]],
+        [[200,294],[235,296],[265,300]],[[262,340],[272,440]],
+        [[178,300],[168,260],[160,210]]
+      ]), dots:[[268,312,7,8]]};
+    }
+    if(name==='lie'){
+      return {d:this.seg([
+        [[120,335],[150,342],[180,348]],[[138,346],[176,353]],
+        [[202,352],[218,356]],[[222,344],[248,340]],
+        [[100,340],[120,333]]
+      ]), dots:[[262,340,7,7]]};
+    }
+    if(name==='bend'){
+      return {d:this.seg([
+        [[160,294],[190,283],[218,290]],
+        [[148,312],[150,360],[154,430]],[[157,450],[162,510]],
+        [[226,302],[230,360],[230,400]],[[200,316],[216,316]]
+      ]), dots:[[170,438,7,8]]};
+    }
+    return {d:'', dots:[]};
+  }
+  buildBodyD(name){
+    const C=(a)=>this.circ(a[0],a[1],a[2]);
+    const K=(a,b,wa,wb)=>this.cap(a[0],a[1],b[0],b[1],wa,wb);
+    if(name==='stand'){
+      return {near:this.mirror([
+        [150,40],[172,52],[173,86],
+        [166,100],[190,118],
+        [232,140],[260,168],
+        [272,242],[266,322],[246,332],
+        [238,250],
+        [240,290],[224,352],
+        [200,404],
+        [210,450],[202,512],
+        [180,564],[150,594]
+      ]), far:''};
+    }
+    if(name==='run'){
+      return {near:this.loop([
+        [164,76],[178,82],[180,96],[172,108],
+        [176,120],[184,132],[214,172],[214,186],[196,148],[190,156],[204,178],[180,168],
+        [184,212],[181,256],[190,288],
+        [224,316],[238,338],[226,392],[230,420],[250,426],[236,432],[216,422],[214,392],[220,344],[200,330],
+        [162,300],
+        [140,330],[112,360],[88,398],[66,408],[76,418],[100,406],[126,372],[150,336],[160,310],
+        [158,275],[152,220],[152,166],[154,128],[158,98]
+      ]), far:''};
+    }
+    if(name==='sit'){
+      return {near:this.loop([
+        [152,82],[168,86],[172,100],[166,116],
+        [164,128],[173,160],[175,210],[173,255],
+        [187,288],[222,290],[256,292],[272,300],[272,320],
+        [276,400],[278,500],[294,512],[296,520],
+        [272,520],[268,500],[262,400],[256,330],[250,322],
+        [216,318],[190,316],[178,300],
+        [166,268],[158,218],[156,172],[156,135],[152,104]
+      ]), far:''};
+    }
+    if(name==='lie'){
+      return {near:this.loop([
+        [54,322],[70,310],[88,306],[98,312],[92,326],
+        [106,332],[138,340],[176,350],[202,350],[218,352],
+        [238,338],[262,338],[258,360],[276,366],[288,372],
+        [276,380],[256,372],[244,356],
+        [218,372],[200,378],[168,368],
+        [130,358],[96,348],[72,338],[56,332]
+      ]), far:''};
+    }
+    if(name==='bend'){
+      return {near:this.loop([
+        [244,304],[260,314],[256,328],[240,326],
+        [216,318],[188,318],[162,318],
+        [168,400],[170,438],[164,508],[164,538],[186,548],
+        [162,552],[150,540],[150,510],[150,440],[146,360],
+        [140,308],
+        [158,292],[190,280],[220,288],
+        [232,340],[232,396],[236,410],[224,410],[220,396],[212,340],
+        [210,300],[232,300]
+      ]), far:''};
+    }
+    return {near:'',far:''};
+  }
+  dumbbell(cx,cy){
+    const h=React.createElement;
+    const plate=(x)=>h('rect',{x:x,y:cy-11,width:6,height:22,rx:2,fill:'rgba(150,200,255,.5)',stroke:'rgba(180,220,255,.8)',strokeWidth:0.8});
+    return h('g',{key:'db'+cx+cy},
+      h('rect',{x:cx-14,y:cy-3.5,width:28,height:7,rx:3,fill:'rgba(120,180,255,.4)',stroke:'rgba(180,220,255,.7)',strokeWidth:0.8}),
+      plate(cx-17), plate(cx+11));
+  }
+
+  buildHero(name, reg){
+    const h=React.createElement;
+    const poseMap={meet:'stand',pain:'stand',wearable:'watch',scan:'stand',score:'stand',dashboard:'stand',sleep:'sleep',sitting:'sit',movement:'walk',lifting:'lift'};
+    const active=poseMap[name]||'stand';
+    const poses=['stand','sit','walk','lift','sleep','watch'];
+    const imgs=poses.map(p=>h('img',{key:p,src:`assets/${p}.png`,draggable:false,style:{position:'absolute',left:'50%',top:'50%',width:'100%',height:'100%',transform:'translate(-50%,-50%)',objectFit:'contain',opacity:p===active?1:0,transition:p===active?'opacity .45s ease .3s':'opacity .3s ease',filter:'drop-shadow(0 0 24px rgba(45,130,225,.4))',pointerEvents:'none',WebkitUserSelect:'none'}}));
+
+    // spine region anchors on the standing/back image (percent of the hero frame; spine is centred)
+    const SR={neck:[50,21],upper:[50,27.5],mid:[50,34.5],lower:[50,42.5]};
+    const tint=(key,xp,yp,col,wp,hp,pulse)=>h('div',{key,style:{position:'absolute',left:xp+'%',top:yp+'%',width:(wp||19)+'%',height:(hp||8)+'%',transform:'translate(-50%,-50%)',borderRadius:'50%',pointerEvents:'none',background:`radial-gradient(ellipse at center, ${col} 0%, ${col} 34%, transparent 72%)`,mixBlendMode:'color',animation:pulse?'pulseGlow 1.2s ease-in-out infinite':'none'}});
+    const bloomDot=(key,xp,yp,col,wp,hp,pulse)=>h('div',{key,style:{position:'absolute',left:xp+'%',top:yp+'%',width:(wp||25)+'%',height:(hp||12)+'%',transform:'translate(-50%,-50%)',borderRadius:'50%',pointerEvents:'none',background:`radial-gradient(ellipse at center, ${col} 0%, transparent 70%)`,mixBlendMode:'screen',animation:pulse?'pulseGlow 1.2s ease-in-out infinite':'none'}});
+
+    const ov=[];
+    if(name==='pain'){
+      Object.keys(this.state.pain).forEach(k=>{ if(this.state.pain[k]){ const r=SR[k];
+        ov.push(tint('pt'+k,r[0],r[1],'rgba(255,42,32,0.95)'));
+        ov.push(bloomDot('pb'+k,r[0],r[1],'rgba(255,60,40,0.65)',23,11,true)); } });
+      [['neck'],['upper'],['mid'],['lower']].forEach(([k])=>{ const r=SR[k]; const on=this.state.pain[k];
+        ov.push(h('button',{key:'hp'+k,onClick:()=>this.togglePain(k),style:{position:'absolute',left:r[0]+'%',top:r[1]+'%',width:'15%',height:'8%',transform:'translate(-50%,-50%)',borderRadius:'30px',cursor:'pointer',background:on?'rgba(255,60,40,0.10)':'rgba(120,200,255,0.05)',border:on?'1px solid rgba(255,95,75,.65)':'1px dashed rgba(150,205,255,.4)',transition:'all .25s ease'}})); });
+    }
+    if(name==='score'){
+      const segs=[['c',reg.c,21],['t',reg.t,31],['l',reg.l,42]];
+      segs.forEach(([id,v,yp])=>{ const rgb=v>72?'54,224,161':v>50?'255,176,32':'255,86,70';
+        ov.push(tint('sc'+id,50,yp,`rgba(${rgb},0.92)`,21,12));
+        if(v<=50) ov.push(bloomDot('sb'+id,50,yp,`rgba(${rgb},0.5)`,25,13,true)); });
+    }
+    if(name==='lifting'){
+      const t=Math.min(1,Math.max(0,(this.state.lift-5)/40));
+      const rgb=t>0.6?'255,52,30':t>0.3?'255,110,35':'255,160,40';
+      ov.push(bloomDot('lf',39,44,`rgba(${rgb},${(0.32+0.5*t).toFixed(2)})`,11+8*t,6+5*t,true));
+      ov.push(tint('lft',39,44,`rgba(${rgb},${(0.5+0.4*t).toFixed(2)})`,8+5*t,5+3*t));
+    }
+    if(name==='sitting'){
+      const t=Math.min(1,Math.max(0,(this.state.sitHrs-3)/11));
+      const rgb=t>0.7?'255,60,35':t>0.4?'255,120,40':'255,165,45';
+      ov.push(bloomDot('st',42,46,`rgba(${rgb},${(0.28+0.48*t).toFixed(2)})`,11+8*t,6+5*t,true));
+      ov.push(tint('stt',42,46,`rgba(${rgb},${(0.42+0.42*t).toFixed(2)})`,8+5*t,5+3*t));
+    }
+
+    const noZoom=(name==='meet'||name==='wearable');
+    const inner=h('div',{key:'zoomwrap',style:{position:'absolute',inset:0,transform:noZoom?'scale(1)':'scale(1.34)',transformOrigin:'50% 28%',transition:'transform .6s cubic-bezier(.4,0,.2,1)'}}, ...imgs, ...ov);
+    return h('div',{style:{position:'absolute',inset:0,isolation:'isolate'}}, inner);
+  }
+
+  // ---------- particles ----------
+  buildParticles(){
+    const h=React.createElement;
+    if(!this._parts){ this._parts=Array.from({length:26},()=>({l:Math.random()*100,t:40+Math.random()*55,s:1+Math.random()*2.4,d:Math.random()*8,dur:7+Math.random()*7})); }
+    return this._parts.map((p,i)=>h('div',{key:i,style:{position:'absolute',left:p.l+'%',top:p.t+'%',width:p.s+'px',height:p.s+'px',borderRadius:'50%',background:'rgba(150,210,255,.8)',boxShadow:'0 0 6px rgba(120,200,255,.8)',animation:`floaty ${p.dur}s linear ${p.d}s infinite`}}));
+  }
+
+  // ---------- render ----------
+  renderVals(){
+    const i=this.state.i, name=this.screens[i];
+    const reg=this.regionScores(), score=this.computeScore();
+    const s=this.state;
+    const chip=(b,t)=>b?[t]:[];
+    const painChips=[...chip(s.pain.neck,'Neck'),...chip(s.pain.upper,'Upper back'),...chip(s.pain.mid,'Mid back'),...chip(s.pain.lower,'Lower back')];
+
+    const pbtn=(on)=>({fontFamily:'inherit',fontSize:'12px',fontWeight:'500',padding:'8px 13px',borderRadius:'20px',cursor:'pointer',whiteSpace:'nowrap',
+      border:on?'1px solid rgba(255,120,100,.6)':'1px solid rgba(120,180,255,.22)',background:on?'rgba(255,90,80,.18)':'rgba(10,28,56,.55)',color:on?'#ffb3a8':'#bcd4f0',backdropFilter:'blur(8px)'});
+    const seg=(on)=>({flex:'1',fontFamily:'inherit',fontSize:'12.5px',fontWeight:'500',padding:'11px 0',borderRadius:'12px',cursor:'pointer',
+      border:on?'1px solid rgba(120,205,255,.55)':'1px solid rgba(120,180,255,.16)',background:on?'rgba(60,150,230,.2)':'rgba(8,22,44,.45)',color:on?'#dff2ff':'#9fb4d2'});
+
+    const risks=[];
+    if(s.pain.lower) risks.push({t:'Lower-back strain',d:'Flagged lumbar region',color:'#ff5a5a'});
+    if(s.sitHrs>8) risks.push({t:'Prolonged sitting',d:s.sitHrs+' hrs/day at a desk',color:'#ffb020'});
+    if(s.lift>25) risks.push({t:'Heavy lifting load',d:s.lift+' kg max load',color:'#ff5a5a'});
+    if(s.pain.neck) risks.push({t:'Neck tension',d:'Flagged cervical region',color:'#ffb020'});
+    if(s.sleepPos==='stomach') risks.push({t:'Stomach sleeping',d:'Strains the cervical curve',color:'#ffb020'});
+    if(s.steps<6000) risks.push({t:'Low daily activity',d:s.steps.toLocaleString()+' steps/day',color:'#ffb020'});
+    if(!risks.length) risks.push({t:'Well balanced',d:'No major risk factors',color:'#36e0a1'});
+
+    const recs=[];
+    if(s.sitHrs>6) recs.push('Stand and reset posture every 30 minutes.');
+    if(s.steps<8000) recs.push('Add a 15-minute walk to reach ~8k steps.');
+    if(s.lift>20) recs.push('Hinge at the hips and brace before lifting.');
+    if(s.sleepPos==='stomach') recs.push('Shift to side-sleeping with a knee pillow.');
+    if(s.pain.lower||s.pain.neck) recs.push('Try daily mobility drills for flagged areas.');
+    if(recs.length<2) recs.push('Maintain your routine and re-scan weekly.');
+
+    const regionBars=[
+      {name:'Cervical',val:reg.c,pct:reg.c,color:this.scColor(reg.c)},
+      {name:'Thoracic',val:reg.t,pct:reg.t,color:this.scColor(reg.t)},
+      {name:'Lumbar',val:reg.l,pct:reg.l,color:this.scColor(reg.l)},
+    ];
+    const band=score>78?'Strong':score>60?'Moderate':'Needs care';
+
+    return {
+      hero:this.buildHero(name,reg), particles:this.buildParticles(), innerRef:this.innerRef, scoreRef:this.scoreRef, gaugeRef:this.gaugeRef,
+      stageDown:(e)=>this.stageDown(e),
+      stepNum:i+1, stepLabel:this.labels[i], progressPct:(i/9)*100, backOpacity:i>0?1:0.25,
+      isMeet:name==='meet',isPain:name==='pain',isSleep:name==='sleep',isSit:name==='sitting',isMove:name==='movement',isLift:name==='lifting',isWear:name==='wearable',isScan:name==='scan',isScore:name==='score',isDash:name==='dashboard',
+      back:()=>this.back(), cta:()=>this.cta(), ctaLabel: name==='meet'?'Begin assessment':name==='score'?'View full report':name==='dashboard'?'Restart assessment':'Continue',
+      showCta: !(name==='scan' && this.state.scanPhase!=='done'),
+      // pain
+      painChips, noPain:painChips.length===0,
+      tapNeck:()=>this.togglePain('neck'),tapUpper:()=>this.togglePain('upper'),tapMid:()=>this.togglePain('mid'),tapLower:()=>this.togglePain('lower'),
+      pstyle:{neck:pbtn(s.pain.neck),upper:pbtn(s.pain.upper),mid:pbtn(s.pain.mid),lower:pbtn(s.pain.lower)},
+      // sleep
+      sleepSide:()=>this.setSleep('side'),sleepBack:()=>this.setSleep('back'),sleepStomach:()=>this.setSleep('stomach'),
+      sstyle:{side:seg(s.sleepPos==='side'),back:seg(s.sleepPos==='back'),stomach:seg(s.sleepPos==='stomach')},
+      sleepHrsLbl:s.sleepHrs.toFixed(1), sleepPct:((s.sleepHrs-3)/7)*100, slideSleep:(e)=>this.slider(e,'sleepHrs',3,10,0.5),
+      // sit / move / lift
+      sitHrs:s.sitHrs, sitPct:(s.sitHrs/14)*100, slideSit:(e)=>this.slider(e,'sitHrs',0,14,1),
+      stepsLbl:s.steps.toLocaleString(), stepPct:(s.steps/15000)*100, slideSteps:(e)=>this.slider(e,'steps',0,15000,500),
+      lift:s.lift, liftPct:(s.lift/50)*100, slideLift:(e)=>this.slider(e,'lift',0,50,1),
+      // wearable
+      sync:()=>this.sync(), syncing:s.syncing, synced:s.synced, notSynced:!s.synced&&!s.syncing,
+      // scan
+      runScan:()=>this.runScan(), scanIdle:s.scanPhase==='idle', scanning:s.scanPhase==='scanning', scanDone:s.scanPhase==='done',
+      // score / dash
+      regionBars, scoreVal:score, scoreColor:this.scColor(Math.round((reg.c+reg.t+reg.l)/3)), scoreBand:band, risks:risks.slice(0,3), recs:recs.slice(0,3),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -130,13 +130,15 @@ export function PhoneFrame({ p, focused }: Props) {
           </div>
         )}
 
-        <StatusBar accent={p.accent} tone={p.appTheme === 'light' ? 'dark' : 'light'} />
+        {!p.hideStatusBar && (
+          <StatusBar accent={p.accent} tone={p.appTheme === 'light' ? 'dark' : 'light'} />
+        )}
       </div>
     </div>
   )
 }
 
-/** Static, ambient poster for emulator tiles — no Appetize boot in the grid. */
+/** Static poster for emulator tiles — heavy content boots only on focus, not in the grid. */
 function EmulatorPoster({
   p,
   booting,
@@ -146,6 +148,40 @@ function EmulatorPoster({
   booting: boolean
   hidden: boolean
 }) {
+  // Poster-image variant (a rendered still) — used for rich, heavy prototypes.
+  if (p.poster) {
+    return (
+      <div
+        className="absolute inset-0 transition-opacity duration-500"
+        style={{ opacity: hidden ? 0 : 1 }}
+      >
+        <img
+          src={asset(p.poster)}
+          alt={p.name}
+          width={SCREEN_W}
+          height={SCREEN_H}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-6">
+          {booting ? (
+            <div className="flex items-center gap-2 rounded-full bg-black/45 px-3.5 py-1.5 text-xs text-white/80 backdrop-blur">
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/20 border-t-white/80" />
+              Entering lab…
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium backdrop-blur"
+              style={{ background: `${p.accent}26`, color: '#fff', boxShadow: `0 0 0 1px ${p.accent}55 inset` }}
+            >
+              ▸ {p.platform ?? 'Tap to enter'}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Fallback CSS poster.
   return (
     <div
       className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500"

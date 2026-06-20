@@ -14,6 +14,8 @@ export interface Prototype {
   featured?: boolean
   /** 'light' apps get a dark status-bar overlay so the time/battery stay legible */
   appTheme?: 'light' | 'dark'
+  /** suppress the dashboard status bar when the embedded app draws its own */
+  hideStatusBar?: boolean
   /** live + emulator: url loaded in an iframe (emulator only mounts on focus) */
   src?: string
   /** video: looping muted source + still poster shown until first paint */
@@ -94,15 +96,17 @@ export const PROTOTYPES: Prototype[] = [
     build: 'Concept reel',
   },
   {
-    id: 'vault',
-    name: 'Vault',
-    tagline: 'Self-custody without the fear',
-    category: 'Crypto',
+    id: 'spinelab',
+    name: 'Spine Lab',
+    tagline: 'X-ray vision for your spine health',
+    category: '3D Lab',
     kind: 'emulator',
-    accent: '#f97316',
-    src: '/prototypes/vault.html',
-    platform: 'iOS 17 · iPhone 15 Pro',
-    build: 'Native build',
+    accent: '#38bdf8',
+    src: '/prototypes/spinelab/index.html',
+    poster: '/prototypes/spinelab/poster.jpg',
+    platform: 'Enter the lab',
+    hideStatusBar: true,
+    build: 'Claude Design',
   },
 ]
 
