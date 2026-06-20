@@ -140,10 +140,10 @@ function AppProvider({ children }) {
   const next = () => go(step + 1);
   const back = () => go(step - 1);
 
-  const restart = () => { setStep(0); setCoins(0); setData({ ...DEFAULT_DATA }); setGateOpen(true); };
+  const restart = () => { setStep(0); setCoins(0); setData({ ...DEFAULT_DATA }); setGateOpen(false); };
 
-  // ── educational intro video gate ──
-  const [gateOpen, setGateOpen] = React.useState(step === 0 && !data.watchedIntro);
+  // ── educational intro video gate (disabled for the dashboard embed — starts straight on the app) ──
+  const [gateOpen, setGateOpen] = React.useState(false);
   const openGate = () => setGateOpen(true);
   const closeGate = () => setGateOpen(false);
   const markWatched = () => setData((d) => ({ ...d, watchedIntro: true }));

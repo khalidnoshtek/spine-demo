@@ -45,21 +45,13 @@ window.Slider = Slider;
 
 // ════════════ SCREEN 1 — Meet Your Spine ════════════
 function MeetScreen() {
-  const { data, openGate, beginJourney } = useApp();
-  const watched = data.watchedIntro;
+  const { beginJourney } = useApp();
   return (
     <Shell stars={1.4} footer={
-      watched ? (
-        <CTA tone="energy" sub="Reward · +50 Spine Coins" onClick={beginJourney}>
-          Begin Journey
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </CTA>
-      ) : (
-        <CTA tone="energy" sub="Required · learn why we ask" onClick={openGate}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          Watch: Why we ask
-        </CTA>
-      )
+      <CTA tone="energy" sub="Reward · +50 Spine Coins" onClick={beginJourney}>
+        Begin Journey
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </CTA>
     }>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', paddingBottom: 10 }}>
         <Eyebrow>SPINEVERSE™</Eyebrow>
@@ -70,12 +62,6 @@ function MeetScreen() {
         <p style={{ fontFamily: 'Manrope', fontSize: 14.5, color: SV.muted, marginTop: 12, maxWidth: 280, lineHeight: 1.5 }}>
           Meet your living digital spine. It grows, glows and evolves as we learn about you.
         </p>
-        {watched && (
-          <button onClick={openGate} style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 15px', borderRadius: 99, border: `1px solid ${SV.chipBorder}`, background: SV.chipBg, color: SV.muted, fontFamily: 'Sora', fontWeight: 600, fontSize: 12.5, cursor: 'pointer' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            Rewatch why we ask
-          </button>
-        )}
       </div>
     </Shell>
   );
