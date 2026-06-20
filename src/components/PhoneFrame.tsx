@@ -126,7 +126,7 @@ export function PhoneFrame({ p, focused }: Props) {
           </div>
         )}
 
-        <StatusBar accent={p.accent} />
+        <StatusBar accent={p.accent} tone={p.appTheme === 'light' ? 'dark' : 'light'} />
       </div>
     </div>
   )

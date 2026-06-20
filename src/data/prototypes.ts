@@ -12,6 +12,8 @@ export interface Prototype {
   accent: string
   /** featured tiles render larger with a flagship treatment */
   featured?: boolean
+  /** 'light' apps get a dark status-bar overlay so the time/battery stay legible */
+  appTheme?: 'light' | 'dark'
   /** live + emulator: url loaded in an iframe (emulator only mounts on focus) */
   src?: string
   /** video: looping muted source + still poster shown until first paint */
@@ -40,34 +42,35 @@ export const PROTOTYPES: Prototype[] = [
     build: 'Claude Design',
   },
   {
-    id: 'pulse',
-    name: 'Pulse',
-    tagline: 'Recovery-first training',
-    category: 'Health',
+    id: 'command',
+    name: 'Spine Command Center',
+    tagline: 'The consumer spine-health OS',
+    category: 'Health OS',
     kind: 'live',
-    accent: '#22d3ee',
-    src: '/prototypes/pulse.html',
-    build: 'v0.4 · Internal',
+    accent: '#00E5FF',
+    src: '/prototypes/command/index.html',
+    build: 'Claude Design',
   },
   {
-    id: 'loop',
-    name: 'Loop',
-    tagline: 'Sound that follows your day',
-    category: 'Audio',
+    id: 'quest',
+    name: 'Spine Quest',
+    tagline: 'Spine health, leveled up',
+    category: 'Gamified Health',
     kind: 'live',
-    accent: '#f472b6',
-    src: '/prototypes/loop.html',
-    build: 'v0.6 · Beta',
+    accent: '#7C83FF',
+    src: '/prototypes/quest/index.html',
+    build: 'Claude Design',
   },
   {
-    id: 'nest',
-    name: 'Nest',
-    tagline: 'Your home, one tap',
-    category: 'IoT',
+    id: 'spineos',
+    name: 'SpineOS',
+    tagline: 'A clearer picture of your back health',
+    category: 'Clinical',
     kind: 'live',
-    accent: '#34d399',
-    src: '/prototypes/nest.html',
-    build: 'v0.2 · Prototype',
+    accent: '#0E7C86',
+    appTheme: 'light',
+    src: '/prototypes/drspine/index.html',
+    build: 'Claude Design',
   },
   {
     id: 'drift',
