@@ -9,7 +9,7 @@ const POS: Record<string, { col: string; row: string }> = {
   command: { col: '3', row: '1' },
   quest: { col: '4', row: '1' },
   spineos: { col: '5', row: '1' },
-  drift: { col: '3', row: '2' },
+  spineiq: { col: '3', row: '2' },
   bloom: { col: '4', row: '2' },
   vault: { col: '5', row: '2' },
 }

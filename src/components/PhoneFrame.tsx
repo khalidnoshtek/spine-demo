@@ -9,9 +9,13 @@ export const BEZEL = 13
 export const BASE_W = SCREEN_W + BEZEL * 2 // 416
 export const BASE_H = SCREEN_H + BEZEL * 2 // 870
 
-/** Resolve a public-folder path against Vite's base (so it works under /spine-demo/ on Pages). */
-const asset = (path?: string) =>
-  path ? import.meta.env.BASE_URL + path.replace(/^\//, '') : path
+/** Resolve an asset reference: external URLs pass through; public-folder paths
+ *  are resolved against Vite's base so they work under /spine-demo/ on Pages. */
+const asset = (path?: string) => {
+  if (!path) return path
+  if (/^https?:\/\//.test(path)) return path
+  return import.meta.env.BASE_URL + path.replace(/^\//, '')
+}
 
 interface Props {
   p: Prototype
