@@ -152,7 +152,7 @@ function EmulatorPoster({
   if (p.poster) {
     return (
       <div
-        className="absolute inset-0 transition-opacity duration-500"
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500"
         style={{ opacity: hidden ? 0 : 1 }}
       >
         <img
@@ -184,7 +184,7 @@ function EmulatorPoster({
   // Fallback CSS poster.
   return (
     <div
-      className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500"
+      className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500"
       style={{
         opacity: hidden ? 0 : 1,
         background: `radial-gradient(120% 60% at 50% 0%, ${p.accent}33, transparent 60%), #08070a`,
