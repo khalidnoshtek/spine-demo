@@ -39,6 +39,52 @@ body {
     var(--color-ink);
 }
 
+/* Ambient animated spine living in the background */
+.spine-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: clamp(6px, 4vw, 96px);
+  opacity: 0.42;
+  animation: spineSway 24s ease-in-out infinite;
+}
+.spine-bg svg {
+  height: 94vh;
+  width: auto;
+  overflow: visible;
+}
+.spine-bg .vert {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: vertPulse 3.4s ease-in-out infinite;
+}
+@keyframes vertPulse {
+  0%, 100% {
+    opacity: 0.28;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+@keyframes spineSway {
+  0%, 100% {
+    transform: translateX(-1.2%) rotate(-1.4deg) scale(0.99);
+  }
+  50% {
+    transform: translateX(1.2%) rotate(1.4deg) scale(1.01);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-bg,
+  .spine-bg .vert {
+    animation: none;
+  }
+}
+
 /* Faint grid texture on the desk surface */
 .studio-grid::before {
   content: '';

@@ -99,10 +99,11 @@ export default function App() {
 
   return (
     <div className="studio-bg studio-grid relative min-h-screen w-full overflow-hidden">
+      <BackgroundSpine />
       <Header />
 
       {/* Layout placeholders — define where phones live. Phones themselves are in the fixed layer below. */}
-      <main className="mx-auto max-w-[900px] px-8 pb-5">
+      <main className="relative z-10 mx-auto max-w-[900px] px-8 pb-5">
         <div ref={gridRef} className="grid grid-cols-5 gap-x-4 gap-y-4">
           {PROTOTYPES.map((p) => (
             <div
@@ -216,6 +217,67 @@ function FloatWrap({
     >
       {children}
     </motion.div>
+  )
+}
+
+/** Ambient vertebral column drifting behind the grid, with a glow pulse travelling down it. */
+function BackgroundSpine() {
+  const N = 26
+  const W = 220
+  const H = 680
+  const verts = Array.from({ length: N }, (_, i) => {
+    const t = i / (N - 1)
+    const y = 24 + t * (H - 48)
+    // gentle double-S sweep, like a real spine seen from the side
+    const x = W / 2 + Math.sin(t * Math.PI * 1.85 + 0.4) * 40
+    const vw = 20 + Math.sin(t * Math.PI) * 30 // widest through the mid/lumbar
+    const vh = 10 + Math.sin(t * Math.PI) * 4
+    const rot = Math.cos(t * Math.PI * 1.85 + 0.4) * 16
+    return { x, y, vw, vh, rot, delay: (t * 2.2).toFixed(2), i }
+  })
+  const cord = verts.map((v, i) => (i ? 'L' : 'M') + v.x.toFixed(1) + ' ' + v.y.toFixed(1)).join(' ')
+  return (
+    <div className="spine-bg" aria-hidden>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="spineGrad" x1="0" y1="0" x2="0.4" y2="1">
+            <stop offset="0" stopColor="#6366f1" />
+            <stop offset="0.5" stopColor="#22d3ee" />
+            <stop offset="1" stopColor="#a855f7" />
+          </linearGradient>
+          <filter id="spineGlow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="2.6" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <g filter="url(#spineGlow)">
+          <path
+            d={cord}
+            fill="none"
+            stroke="url(#spineGrad)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            opacity="0.3"
+          />
+          {verts.map((v) => (
+            <ellipse
+              key={v.i}
+              className="vert"
+              cx={v.x}
+              cy={v.y}
+              rx={v.vw / 2}
+              ry={v.vh / 2}
+              fill="url(#spineGrad)"
+              transform={`rotate(${v.rot} ${v.x} ${v.y})`}
+              style={{ animationDelay: `${v.delay}s` }}
+            />
+          ))}
+        </g>
+      </svg>
+    </div>
   )
 }
 
