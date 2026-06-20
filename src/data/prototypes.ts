@@ -29,15 +29,15 @@ export interface Prototype {
  */
 export const PROTOTYPES: Prototype[] = [
   {
-    id: 'halo',
-    name: 'Halo',
-    tagline: 'The bank account that thinks ahead',
-    category: 'Fintech',
+    id: 'spineverse',
+    name: 'Spineverse',
+    tagline: 'Spine health, gamified',
+    category: 'Health',
     kind: 'live',
-    accent: '#6366f1',
+    accent: '#8b5cf6',
     featured: true,
-    src: '/prototypes/halo.html',
-    build: 'v0.9 · TestFlight',
+    src: '/prototypes/spineverse/SPINEVERSE.html',
+    build: 'Claude Design',
   },
   {
     id: 'pulse',

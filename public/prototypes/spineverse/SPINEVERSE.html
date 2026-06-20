@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SPINEVERSE™</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  body { font-family: 'Manrope', system-ui, sans-serif; }
+  /* Embedded in the Spine dashboard's own phone bezel — no device frame / stage of our own. */
+  #stage {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: transparent;
+  }
+  #scaler { transform-origin: center center; }
+  #root { width: 402px; height: 874px; position: relative; }
+
+  /* hide scrollbars inside screens */
+  .sv-enter::-webkit-scrollbar, [style*="overflow"]::-webkit-scrollbar { width: 0; height: 0; }
+
+  /* ── entrance (transform-only so content stays visible if timeline is frozen) ── */
+  @keyframes svEnter { from { opacity: 0.35; transform: translateY(16px) scale(0.99); } to { opacity: 1; transform: none; } }
+  .sv-enter { animation: svEnter .5s cubic-bezier(.2,.8,.2,1) forwards; }
+
+  /* ── float ── */
+  @keyframes svFloat { 0%,100% { transform: translateY(-6px); } 50% { transform: translateY(6px); } }
+  .sv-float { animation: svFloat 5s ease-in-out infinite; }
+
+  /* ── breathe (spine) ── */
+  @keyframes svBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.018); } }
+  .sv-breathe { animation: svBreathe 4.2s ease-in-out infinite; }
+
+  /* ── pop ── */
+  @keyframes svPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  .sv-pop { animation: svPop .42s cubic-bezier(.2,1.4,.4,1) forwards; }
+
+  /* ── pulse ── */
+  @keyframes svPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+  .sv-pulse { animation: svPulse 1.4s ease-in-out infinite; }
+
+  /* ── clouds ── */
+  @keyframes svCloud { from { transform: translateX(0); } to { transform: translateX(80px); } }
+  @keyframes svCloud2 { from { transform: translateX(0); } to { transform: translateX(-70px); } }
+  .sv-cloud { animation: svCloud 14s ease-in-out infinite alternate; }
+  .sv-cloud2 { animation: svCloud2 17s ease-in-out infinite alternate; }
+
+  /* ── sleep z ── */
+  @keyframes svZ { 0% { opacity: 0; transform: translateY(0) scale(0.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px) scale(1.1); } }
+  .sv-z { animation: svZ 2.6s ease-out infinite; }
+
+  /* ── birds ── */
+  @keyframes svBird { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .sv-bird { animation: svBird 1.4s ease-in-out infinite; transform-box: fill-box; }
+
+  /* ── walking stride ── */
+  @keyframes svStride { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  .sv-stride { animation: svStride .5s ease-in-out infinite; transform-origin: center; }
+  @keyframes svBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .sv-walk { animation: svBob .5s ease-in-out infinite; }
+
+  /* ── energy flow ── */
+  @keyframes svFlow { to { stroke-dashoffset: -120; } }
+  .sv-flow { animation: svFlow 1s linear infinite; }
+
+  /* ── scan sweep ── */
+  @keyframes svScan { 0% { top: -10%; } 100% { top: 100%; } }
+  .sv-scan { animation: svScan 1.8s ease-in-out infinite; }
+
+  /* ── slow spin ── */
+  @keyframes svSpin { to { transform: rotate(360deg); } }
+  .sv-spin-slow { animation: svSpin 16s linear infinite; transform-origin: center; }
+
+  /* ── idle zone breathe ── */
+  @keyframes svZoneIdle { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+  .sv-zone-idle { animation: svZoneIdle 2.4s ease-in-out infinite; }
+
+  /* ── reward toast ── */
+  @keyframes svReward { 0% { opacity: 0; transform: translateY(-16px) scale(0.85); } 12% { opacity: 1; transform: translateY(0) scale(1.05); } 22% { transform: scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+  .sv-reward { animation: svReward 2.6s ease-out forwards; }
+
+  /* ── CTA press ── */
+  .sv-cta { transition: transform .12s, filter .2s; }
+  .sv-cta:active { transform: scale(0.97); }
+  .sv-cta:hover { filter: brightness(1.06); }
+
+  /* ── bottom sheet ── */
+  @keyframes svSheet { from { transform: translateY(46px); } to { transform: none; } }
+  .sv-sheet { animation: svSheet .42s cubic-bezier(.2,.9,.3,1) both; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage"><div id="scaler"><div id="root"></div></div></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="frames/ios-frame.jsx"></script>
+  <script type="text/babel" src="app/core.jsx"></script>
+  <script type="text/babel" src="app/spine.jsx"></script>
+  <script type="text/babel" src="app/screens-a.jsx"></script>
+  <script type="text/babel" src="app/screens-b.jsx"></script>
+  <script type="text/babel" src="app/screens-c.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function CurrentScreen() {
+      const { step, dir } = useApp();
+      const map = [
+        MeetScreen, PainScreen, SleepScreen, WorkScreen, SittingScreen,
+        MovementScreen, ExerciseScreen, LiftingScreen, WeightScreen, WearableScreen, ScanScreen, ScoreScreen,
+      ];
+      const Screen = map[step] || MeetScreen;
+      return <div key={step} style={{ position: 'absolute', inset: 0 }}><Screen /></div>;
+    }
+
+    function Stage() {
+      const { theme, gateOpen, data, markWatched, beginJourney, closeGate, step } = useApp();
+      const [infoKey, setInfoKey] = React.useState(null);
+      const seenRef = React.useRef({});
+      React.useEffect(() => {
+        const key = window.SCREENS[step];
+        if (window.QUESTION_INFO[key] && !seenRef.current[key]) {
+          const t = setTimeout(() => setInfoKey(key), 360);
+          return () => clearTimeout(t);
+        }
+        setInfoKey(null);
+      }, [step]);
+      const closeInfo = () => { if (infoKey) seenRef.current[infoKey] = true; setInfoKey(null); };
+      // Frameless: the Spine dashboard supplies the phone bezel + status bar,
+      // so we render the screens full-bleed instead of inside an IOSDevice frame.
+      return (
+        <div style={{
+          position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 45,
+          background: theme !== 'light' ? '#000' : '#F2F2F7',
+        }}>
+          <CurrentScreen />
+          <HUD />
+          <RewardLayer />
+          <InfoGate infoKey={gateOpen ? null : infoKey} onClose={closeInfo} />
+          <VideoGate
+            open={gateOpen}
+            watched={data.watchedIntro}
+            onComplete={markWatched}
+            onProceed={beginJourney}
+            onClose={closeGate}
+          />
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <AppProvider>
+          <Stage />
+        </AppProvider>
+      );
+    }
+
+    // ── responsive scaling — fill the embedding iframe (390×844 phone screen) ──
+    function fit() {
+      const sc = Math.min(window.innerWidth / 402, window.innerHeight / 874);
+      document.getElementById('scaler').style.transform = `scale(${sc})`;
+    }
+    window.addEventListener('resize', fit);
+    fit();
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
