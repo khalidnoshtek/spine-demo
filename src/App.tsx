@@ -72,10 +72,15 @@ export default function App() {
   const targetFor = (p: Prototype) => {
     const r = rects[p.id]
     if (focusedId === p.id) {
-      const scale = Math.min((vp.h * 0.8) / BASE_H, (vp.w * 0.46) / BASE_W)
+      // Reserve a band at top (close button) and bottom (the name/tagline chrome)
+      // so the phone sits clear of both — the label must never overlap the device.
+      const TOP = 28
+      const BOTTOM = 150
+      const availH = vp.h - TOP - BOTTOM
+      const scale = Math.min(availH / BASE_H, (vp.w * 0.46) / BASE_W)
       return {
         x: (vp.w - BASE_W * scale) / 2,
-        y: (vp.h - BASE_H * scale) / 2,
+        y: TOP + (availH - BASE_H * scale) / 2,
         scale,
         opacity: 1,
         zIndex: 70,
