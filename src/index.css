@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #06070a;
+  --color-surface: #0b0d12;
+  --color-surface-2: #11141b;
+  --color-line: #1c2029;
+  --color-mute: #6b7280;
+  --color-glow: #6366f1;
+  --color-glow-2: #a855f7;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: #e7e9ee;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Ambient studio backdrop */
+.studio-bg {
+  background:
+    radial-gradient(900px 600px at 12% -5%, rgba(99, 102, 241, 0.14), transparent 60%),
+    radial-gradient(800px 600px at 95% 8%, rgba(168, 85, 247, 0.12), transparent 55%),
+    radial-gradient(700px 700px at 50% 120%, rgba(56, 189, 248, 0.08), transparent 60%),
+    var(--color-ink);
+}
+
+/* Faint grid texture on the desk surface */
+.studio-grid::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 85%);
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.02) 30%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0.02) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Custom scrollbar — keep it subtle */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #20242e;
+  border-radius: 99px;
+  border: 3px solid var(--color-ink);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Flagship breathing glow */
+@keyframes flagshipGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.flagship-glow {
+  animation: flagshipGlow 4.5s ease-in-out infinite;
+}

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=390, initial-scale=1, viewport-fit=cover" />
+    <title>Vault</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      :root { --a: #f97316; }
+      html, body { width: 390px; height: 844px; overflow: hidden; }
+      body {
+        font-family: 'Inter', -apple-system, system-ui, sans-serif;
+        background: radial-gradient(120% 55% at 50% -8%, rgba(249,115,22,.2), transparent 60%), #08070a;
+        color: #f4ede6; padding: 56px 22px 24px; -webkit-font-smoothing: antialiased; user-select: none;
+      }
+      .top { display: flex; justify-content: space-between; align-items: center; }
+      .top .id { display: flex; align-items: center; gap: 10px; }
+      .top .id .dot { width: 34px; height: 34px; border-radius: 11px; background: linear-gradient(135deg, var(--a), #fb923c); display: grid; place-items: center; font-weight: 800; color: #1a0d03; }
+      .top .id b { font-size: 15px; } .top .id span { font-size: 11.5px; color: #9a8f84; display: block; }
+      .shield { font-size: 12px; color: #34d399; background: rgba(52,211,153,.12); padding: 6px 11px; border-radius: 99px; }
+      .total { margin: 26px 0 6px; }
+      .total .l { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #9a8f84; }
+      .total .v { font-size: 40px; font-weight: 760; letter-spacing: -.02em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+      .total .d { color: #34d399; font-size: 14px; margin-top: 4px; }
+      .spark { height: 60px; margin: 16px 0 22px; }
+      .assets .a { display: flex; align-items: center; gap: 13px; padding: 14px 0; border-bottom: 1px solid #14121a; }
+      .assets .a .ic { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+      .assets .a .mid b { font-size: 14.5px; display: block; } .assets .a .mid span { font-size: 12px; color: #8b8077; }
+      .assets .a .r { margin-left: auto; text-align: right; } .assets .a .r b { font-size: 14px; font-variant-numeric: tabular-nums; }
+      .assets .a .r span { font-size: 12px; } .up { color: #34d399; } .dn { color: #f87171; }
+      .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 22px; }
+      .btns button { padding: 15px; border-radius: 16px; border: 0; font-weight: 660; font-size: 14px; }
+      .btns .buy { background: var(--a); color: #1a0d03; } .btns .send { background: #15131b; color: #fff; border: 1px solid #221f2b; }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <div class="id"><div class="dot">V</div><div><b>Main Vault</b><span>0xA4…9f2C</span></div></div>
+      <div class="shield">🛡 Secured</div>
+    </div>
+
+    <div class="total">
+      <div class="l">Portfolio value</div>
+      <div class="v" id="val">$48,210</div>
+      <div class="d">▲ $2,140 (24h) · 4.6%</div>
+    </div>
+
+    <svg class="spark" width="100%" height="60" viewBox="0 0 340 60" preserveAspectRatio="none">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(249,115,22,.5)"/><stop offset="1" stop-color="rgba(249,115,22,0)"/></linearGradient></defs>
+      <path id="fill" fill="url(#lg)"></path>
+      <path id="line" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"></path>
+    </svg>
+
+    <div class="assets">
+      <div class="a"><div class="ic" style="background:#2a2018;color:#f7931a">₿</div><div class="mid"><b>Bitcoin</b><span>0.41 BTC</span></div><div class="r"><b>$28,140</b><span class="up">+3.2%</span></div></div>
+      <div class="a"><div class="ic" style="background:#1b2030;color:#818cf8">Ξ</div><div class="mid"><b>Ethereum</b><span>4.2 ETH</span></div><div class="r"><b>$14,980</b><span class="up">+5.1%</span></div></div>
+      <div class="a"><div class="ic" style="background:#15231e;color:#34d399">◎</div><div class="mid"><b>Solana</b><span>62 SOL</span></div><div class="r"><b>$5,090</b><span class="dn">−1.4%</span></div></div>
+    </div>
+
+    <div class="btns"><button class="buy">Buy</button><button class="send">Send</button></div>
+
+    <script>
+      // Live sparkline
+      const line = document.getElementById('line'), fill = document.getElementById('fill')
+      function draw() {
+        let pts = [], x = 0, y = 35
+        for (let i = 0; i <= 34; i++) { y += (Math.random() - 0.5) * 9; y = Math.max(10, Math.min(50, y)); pts.push([i * 10, y]) }
+        const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1].toFixed(1)).join(' ')
+        line.setAttribute('d', d)
+        fill.setAttribute('d', d + ' L340 60 L0 60 Z')
+      }
+      draw(); setInterval(draw, 2200)
+      const val = document.getElementById('val'); let base = 48210
+      setInterval(() => { base += (Math.random() - 0.4) * 60; val.textContent = '$' + Math.round(base).toLocaleString() }, 1800)
+    </script>
+  </body>
+</html>
