@@ -97,37 +97,35 @@ export default function App() {
       <Header />
 
       {/* Layout placeholders — define where phones live. Phones themselves are in the fixed layer below. */}
-      <main className="mx-auto max-w-[1080px] px-8 pb-8">
-        <div
-          ref={gridRef}
-          className="grid grid-cols-5 gap-x-5 gap-y-12"
-          style={{ gridAutoRows: 'min-content' }}
-        >
+      <main className="mx-auto max-w-[900px] px-8 pb-5">
+        <div ref={gridRef} className="grid grid-cols-5 gap-x-4 gap-y-4">
           {PROTOTYPES.map((p) => (
             <div
               key={p.id}
-              ref={(el) => {
-                slotRefs.current[p.id] = el
-              }}
               onClick={() => setFocusedId(p.id)}
-              className="group relative cursor-pointer"
-              style={{
-                gridColumn: POS[p.id].col,
-                gridRow: POS[p.id].row,
-                aspectRatio: `${BASE_W} / ${BASE_H}`,
-              }}
+              className="group flex cursor-pointer flex-col"
+              style={{ gridColumn: POS[p.id].col, gridRow: POS[p.id].row }}
             >
-              {p.featured && (
-                <div
-                  className="flagship-glow pointer-events-none absolute -inset-10 -z-10 rounded-[80px] transition-opacity duration-300"
-                  style={{
-                    opacity: focusedId ? 0 : undefined,
-                    background:
-                      'radial-gradient(60% 55% at 50% 45%, rgba(99,102,241,.35), rgba(168,85,247,.18) 45%, transparent 72%)',
-                    filter: 'blur(26px)',
-                  }}
-                />
-              )}
+              {/* phone footprint — measured to position the live phone over it */}
+              <div
+                ref={(el) => {
+                  slotRefs.current[p.id] = el
+                }}
+                className="relative w-full"
+                style={{ aspectRatio: `${BASE_W} / ${BASE_H}` }}
+              >
+                {p.featured && (
+                  <div
+                    className="flagship-glow pointer-events-none absolute -inset-8 -z-10 rounded-[80px] transition-opacity duration-300"
+                    style={{
+                      opacity: focusedId ? 0 : undefined,
+                      background:
+                        'radial-gradient(60% 55% at 50% 45%, rgba(99,102,241,.35), rgba(168,85,247,.18) 45%, transparent 72%)',
+                      filter: 'blur(26px)',
+                    }}
+                  />
+                )}
+              </div>
               <Caption p={p} dimmed={!!focusedId} />
             </div>
           ))}
@@ -260,7 +258,7 @@ function Header() {
 function Caption({ p, dimmed }: { p: Prototype; dimmed: boolean }) {
   return (
     <div
-      className="pointer-events-none absolute -bottom-7 left-0 right-0 flex items-center justify-between transition-opacity duration-300"
+      className="pointer-events-none mt-2.5 flex items-center justify-between transition-opacity duration-300"
       style={{ opacity: dimmed ? 0 : 1 }}
     >
       <div className="min-w-0">
