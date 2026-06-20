@@ -224,13 +224,19 @@ function Header() {
     <header className="relative z-10 mx-auto flex max-w-[1080px] items-center justify-between px-8 pb-6 pt-6">
       <div className="flex items-center gap-3.5">
         <div className="relative grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/30">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 2v20M7 5v14M17 5v14M3 9v6M21 9v6"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
+          {/* stacked vertebrae — a spine */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white" aria-hidden>
+            <rect x="8.9" y="2.4" width="6.2" height="2.6" rx="1.3" />
+            <rect x="8.4" y="6.0" width="7.2" height="2.8" rx="1.4" />
+            <rect x="8.1" y="9.6" width="7.8" height="2.9" rx="1.45" />
+            <rect x="8.1" y="13.2" width="7.8" height="2.9" rx="1.45" />
+            <rect x="8.4" y="16.8" width="7.2" height="2.8" rx="1.4" />
+            <rect x="8.9" y="20.4" width="6.2" height="2.6" rx="1.3" />
+            {/* lateral processes hinting the vertebral column */}
+            <circle cx="6.4" cy="11.05" r="0.9" opacity="0.5" />
+            <circle cx="17.6" cy="11.05" r="0.9" opacity="0.5" />
+            <circle cx="6.4" cy="14.65" r="0.9" opacity="0.5" />
+            <circle cx="17.6" cy="14.65" r="0.9" opacity="0.5" />
           </svg>
         </div>
         <div>
