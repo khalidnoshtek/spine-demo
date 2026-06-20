@@ -9,6 +9,10 @@ export const BEZEL = 13
 export const BASE_W = SCREEN_W + BEZEL * 2 // 416
 export const BASE_H = SCREEN_H + BEZEL * 2 // 870
 
+/** Resolve a public-folder path against Vite's base (so it works under /spine-demo/ on Pages). */
+const asset = (path?: string) =>
+  path ? import.meta.env.BASE_URL + path.replace(/^\//, '') : path
+
 interface Props {
   p: Prototype
   /** true when this phone is the expanded, interactive one */
@@ -80,7 +84,7 @@ export function PhoneFrame({ p, focused }: Props) {
         {showIframe && (
           <iframe
             title={p.name}
-            src={p.src}
+            src={asset(p.src)}
             width={SCREEN_W}
             height={SCREEN_H}
             scrolling="no"
@@ -97,8 +101,8 @@ export function PhoneFrame({ p, focused }: Props) {
         {p.kind === 'video' && (
           <video
             ref={videoRef}
-            src={p.video}
-            poster={p.poster}
+            src={asset(p.video)}
+            poster={asset(p.poster)}
             autoPlay
             muted
             loop
