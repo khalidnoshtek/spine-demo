@@ -767,13 +767,15 @@ class Component extends DCLogic {
     closeBtn.onclick = function () { if (!isGate) close() }   // only replays are dismissable
     document.getElementById('svpOpen').onclick = function () { open(CLIPS[idx++ % CLIPS.length], false) }
 
-    // ── mandatory intro gate: open once when the tile is actually opened (focused) ──
+    // ── mandatory gate on the NEXT step: the first page is clean; once the user
+    //    advances past step 1 the clip must be watched before they can continue ──
     function focused() {
       try { var fe = window.frameElement; return fe ? getComputedStyle(fe).pointerEvents !== 'none' : true } catch (e) { return true }
     }
+    function stepNum() { var m = document.body.innerText.match(/STEP\s*(\d+)\s*\/\s*\d+/i); return m ? +m[1] : 1 }
     var poll = setInterval(function () {
       if (watched) { clearInterval(poll); return }
-      if (focused() && !mask.classList.contains('show')) open(CLIPS[0], true)
+      if (focused() && stepNum() > 1 && !mask.classList.contains('show')) open(CLIPS[0], true)
     }, 400)
   })()
 </script>
