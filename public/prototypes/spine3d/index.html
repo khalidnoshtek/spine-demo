@@ -63,6 +63,12 @@
         background: linear-gradient(120deg, #5fd0ff, #818cf8); display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .12s, filter .2s; }
       .cta:active { transform: scale(.98); } .cta:disabled { opacity: .4; }
       .cta.ghost { background: transparent; color: #9fc0e8; border: 1px solid rgba(120,180,255,.2); margin-top: 9px; }
+      .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.2); border-top-color: #5fd0ff; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+      @keyframes spin { to { transform: rotate(360deg) } }
+      .synced { display: flex; align-items: center; gap: 6px; color: #34d399; font-size: 12.5px; font-weight: 600; margin: 12px 0 6px; }
+      .syncrow { display: flex; justify-content: space-between; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+      .syncrow .k { color: #9fc0e8 } .syncrow .v { color: #fff; font-weight: 600 }
+      .fromdev { color: #5fd0ff; font-size: 11px; }
       .back { position: absolute; top: 0; right: 0; background: 0; border: 0; color: #6f93bd; font-size: 12px; cursor: pointer; padding: 4px; }
 
       /* ── reward toast ── */
@@ -325,6 +331,37 @@
             document.getElementById('go').onclick = () => { award(10, 'Profile'); next() }
           },
         },
+        { // 1b · health device sync (optional)
+          pose: 'standing', prog: 0.16, back: true,
+          render: () => `<div class="eyebrow">Optional · Health sync</div><div class="qt">Sync a health device</div>
+            <div class="qs">Pull your steps &amp; sleep automatically for a more accurate Spine Score — or skip and enter them yourself.</div>
+            <div class="chips" id="devs">
+              ${[['Apple Health','🍎'],['Google Fit','🟢'],['Fitbit','⌚'],['Garmin','🛰️']].map(([n,i])=>`<button class="chip" data-d="${n}"><span style="font-size:15px;margin-right:5px">${i}</span>${n}</button>`).join('')}
+            </div>
+            <div id="syncBox"></div>
+            <button class="cta ghost" id="skip">Skip · enter manually</button>`,
+          init: () => {
+            const box = document.getElementById('syncBox')
+            document.querySelectorAll('#devs .chip').forEach((b) => b.onclick = () => {
+              if (box.dataset.busy) return
+              document.querySelectorAll('#devs .chip').forEach((x) => x.classList.toggle('on', x === b))
+              box.dataset.busy = '1'
+              box.innerHTML = `<div style="text-align:center;padding:16px 0;color:#9fc0e8;font-size:13px"><span class="spin"></span> Syncing ${b.dataset.d}…</div>`
+              setTimeout(() => {
+                data.walking = 38; data.sleep = 6; data._synced = true
+                box.innerHTML = `<div class="synced">✓ Connected to ${b.dataset.d}</div>
+                  <div class="syncrow"><span class="k">Avg steps / day</span><span class="v">6,240</span></div>
+                  <div class="syncrow"><span class="k">Walking</span><span class="v">~38 min</span></div>
+                  <div class="syncrow"><span class="k">Sleep</span><span class="v">6h 05m</span></div>
+                  <div class="syncrow"><span class="k">Resting HR</span><span class="v">68 bpm</span></div>
+                  <button class="cta" id="go" style="margin-top:14px">Use this data →</button>`
+                box.dataset.busy = ''
+                document.getElementById('go').onclick = () => { award(40, 'Device synced'); next() }
+              }, 1700)
+            })
+            document.getElementById('skip').onclick = next
+          },
+        },
         { // 2 pain
           pose: 'standing', prog: 0.22, back: true,
           render: () => `<div class="eyebrow">Step 2 · Symptoms</div><div class="qt">Current back pain</div>
@@ -352,7 +389,7 @@
         { // 4 walking
           pose: 'walking', prog: 0.5, back: true,
           render: () => `<div class="eyebrow">Step 4 · Daily habits</div><div class="qt">Walking minutes / day</div>
-            <div class="qs">Walking is the simplest spinal mobiliser — it pumps the discs.</div>
+            <div class="qs">Walking is the simplest spinal mobiliser — it pumps the discs.${data._synced ? ' <span class="fromdev">· 📲 from your device</span>' : ''}</div>
             <div class="slider"><div class="val"><b id="v">${data.walking}</b><span>min</span></div>${riskTag('walking',data.walking)}
             <input type="range" min="0" max="90" step="5" id="sl" value="${data.walking}">
             <div class="scale"><span>0</span><span>90 min</span></div></div><button class="cta" id="go">Continue</button>`,
@@ -370,7 +407,7 @@
         { // 6 sleep
           pose: 'standing', prog: 0.74, back: true,
           render: () => `<div class="eyebrow">Step 6 · Daily habits</div><div class="qt">Sleep hours / night</div>
-            <div class="qs">Tissue repair and disc rehydration happen overnight.</div>
+            <div class="qs">Tissue repair and disc rehydration happen overnight.${data._synced ? ' <span class="fromdev">· 📲 from your device</span>' : ''}</div>
             <div class="slider"><div class="val"><b id="v">${data.sleep}</b><span>hrs</span></div>${riskTag('sleep',data.sleep)}
             <input type="range" min="3" max="10" step="1" id="sl" value="${data.sleep}">
             <div class="scale"><span>3h</span><span>10h</span></div></div><button class="cta" id="go">Continue</button>`,
@@ -428,7 +465,7 @@
             const ring = document.getElementById('ring'), off = 326 - (r.score / 100) * 326
             requestAnimationFrame(() => { ring.style.transition = 'stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1)'; ring.style.strokeDashoffset = off })
             const big = document.getElementById('bigScore'); let n = 0; const iv = setInterval(() => { n += 2; if (n >= r.score) { n = r.score; clearInterval(iv) } big.textContent = n }, 24)
-            if (!STEPS[9]._rewarded) { STEPS[9]._rewarded = true; award(40, 'Assessment done') }
+            if (!STEPS[stepIdx]._rewarded) { STEPS[stepIdx]._rewarded = true; award(40, 'Assessment done') }
             const rb = document.getElementById('rankBadge'); if (rb) rb.innerHTML = `🏅 ${rankFor(coins)} · ${coins}🪙`
             document.getElementById('again').onclick = () => { stepIdx = 0; Spine.pain(0); render() }
           },
