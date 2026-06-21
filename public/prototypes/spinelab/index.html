@@ -685,8 +685,11 @@ class Component extends DCLogic {
   #svpMask { position: fixed; inset: 0; z-index: 95; display: none; align-items: center; justify-content: center; padding: 20px;
     background: rgba(2,8,20,.7); backdrop-filter: blur(10px); font-family: 'Sora', system-ui, sans-serif; }
   #svpMask.show { display: flex; }
-  .svpCard { width: 100%; max-width: 330px; border-radius: 22px; overflow: hidden; background: linear-gradient(180deg,#08284f,#04132b);
+  .svpCard { position: relative; width: 100%; max-width: 330px; border-radius: 22px; overflow: hidden; background: linear-gradient(180deg,#08284f,#04132b);
     border: 1px solid rgba(111,224,255,.22); box-shadow: 0 30px 70px -20px #000; }
+  .svpClose { position: absolute; top: 8px; right: 10px; z-index: 3; width: 28px; height: 28px; border-radius: 50%; border: 0;
+    background: rgba(2,10,24,.5); color: #cfe0f5; font-size: 12px; cursor: pointer; display: none; }
+  .svpGateNote { font-size: 11px; color: #6f93bd; text-align: center; margin-top: 9px; }
   .svpScreen { position: relative; height: 210px; overflow: hidden;
     background: radial-gradient(120% 90% at 50% 8%, #0d3a6e, #03102b 72%); display: grid; place-items: center; }
   .svpScreen img { height: 200px; object-fit: contain; filter: drop-shadow(0 0 18px rgba(95,208,255,.55)); }
@@ -711,6 +714,7 @@ class Component extends DCLogic {
 <button id="svpOpen" aria-label="Learn">ⓘ</button>
 <div id="svpMask">
   <div class="svpCard">
+    <button class="svpClose" id="svpClose" aria-label="Close">✕</button>
     <div class="svpScreen">
       <div class="sweep"></div>
       <img id="svpImg" src="assets/stand.webp" alt="" />
@@ -722,6 +726,7 @@ class Component extends DCLogic {
       <div class="svpBar"><i id="svpProg"></i></div>
       <div class="svpTime"><span id="svpCur">0:00</span><span>0:05</span></div>
       <button class="svpBtn" id="svpDone" disabled>Watch to continue</button>
+      <div class="svpGateNote" id="svpNote">Please watch this short clip to begin</div>
     </div>
   </div>
 </div>
@@ -734,27 +739,42 @@ class Component extends DCLogic {
       { img: 'assets/lift.webp', title: 'Lifting & flexion', text: 'Bending the spine to lift concentrates force at L4–L5. Hinge at the hips and keep the lumbar curve to protect the discs.' },
       { img: 'assets/sleep.webp', title: 'Overnight repair', text: 'Discs rehydrate and tissues repair during deep sleep. 7–8 hours keeps your spine resilient.' },
     ]
-    var idx = 0, timer = null
+    var idx = 1, timer = null, watched = false, isGate = false
     var mask = document.getElementById('svpMask'), play = document.getElementById('svpPlay'),
       prog = document.getElementById('svpProg'), done = document.getElementById('svpDone'),
       cur = document.getElementById('svpCur'), title = document.getElementById('svpTitle'),
-      text = document.getElementById('svpText'), img = document.getElementById('svpImg')
-    function open() {
-      var c = CLIPS[idx % CLIPS.length]; idx++
-      title.textContent = c.title; text.textContent = c.text; img.src = c.img
+      text = document.getElementById('svpText'), img = document.getElementById('svpImg'),
+      closeBtn = document.getElementById('svpClose'), note = document.getElementById('svpNote')
+    function open(clip, gate) {
+      isGate = !!gate
+      title.textContent = clip.title; text.textContent = clip.text; img.src = clip.img
       prog.style.width = '0%'; cur.textContent = '0:00'; play.style.display = 'grid'
-      done.disabled = true; done.textContent = 'Watch to continue'; mask.classList.add('show')
+      done.disabled = true; done.textContent = 'Watch to continue'
+      closeBtn.style.display = gate ? 'none' : 'grid'   // gate can't be skipped
+      note.style.display = gate ? 'block' : 'none'
+      mask.classList.add('show')
     }
     play.onclick = function () {
       play.style.display = 'none'; var p = 0; clearInterval(timer)
       timer = setInterval(function () {
         p += 0.1; var f = Math.min(1, p / 5)
         prog.style.width = f * 100 + '%'; cur.textContent = '0:0' + Math.min(5, Math.floor(p))
-        if (f >= 1) { clearInterval(timer); done.disabled = false; done.textContent = 'Got it ✓' }
+        if (f >= 1) { clearInterval(timer); done.disabled = false; done.textContent = isGate ? 'Start assessment ▸' : 'Got it ✓' }
       }, 100)
     }
-    done.onclick = function () { if (done.disabled) return; clearInterval(timer); mask.classList.remove('show') }
-    document.getElementById('svpOpen').onclick = open
+    function close() { clearInterval(timer); mask.classList.remove('show'); play.style.display = 'none' }
+    done.onclick = function () { if (done.disabled) return; if (isGate) watched = true; close() }
+    closeBtn.onclick = function () { if (!isGate) close() }   // only replays are dismissable
+    document.getElementById('svpOpen').onclick = function () { open(CLIPS[idx++ % CLIPS.length], false) }
+
+    // ── mandatory intro gate: open once when the tile is actually opened (focused) ──
+    function focused() {
+      try { var fe = window.frameElement; return fe ? getComputedStyle(fe).pointerEvents !== 'none' : true } catch (e) { return true }
+    }
+    var poll = setInterval(function () {
+      if (watched) { clearInterval(poll); return }
+      if (focused() && !mask.classList.contains('show')) open(CLIPS[0], true)
+    }, 400)
   })()
 </script>
 </body>
