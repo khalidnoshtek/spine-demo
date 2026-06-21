@@ -3,310 +3,508 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=390, initial-scale=1, viewport-fit=cover" />
-    <title>Spine 3D</title>
+    <title>Spine 3D — Assessment</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
       html, body { width: 390px; height: 844px; overflow: hidden; }
       body {
         font-family: 'Sora', system-ui, sans-serif;
-        background: radial-gradient(120% 80% at 50% 6%, #0a2a52 0%, #061b3a 36%, #020c1e 64%, #00040d 100%);
+        background: radial-gradient(120% 80% at 50% 4%, #0a2a52 0%, #061b3a 36%, #020c1e 64%, #00040d 100%);
         color: #eaf2ff; user-select: none;
       }
       #c { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
-      .top { position: absolute; top: 52px; left: 0; right: 0; z-index: 5; text-align: center; pointer-events: none; }
-      .top .eyebrow { font-size: 11px; letter-spacing: 3px; color: #5fd0ff; text-transform: uppercase; font-weight: 600; }
-      .top h1 { font-size: 22px; font-weight: 600; margin-top: 4px; }
-      .top p { font-size: 12px; color: #8fb0d8; margin-top: 3px; }
 
-      .panel { position: absolute; left: 14px; right: 14px; bottom: 22px; z-index: 6;
-        background: rgba(8,20,40,.62); border: 1px solid rgba(120,180,255,.16); border-radius: 20px;
-        padding: 14px 15px 15px; backdrop-filter: blur(10px); }
+      /* ── HUD ── */
+      .hud { position: absolute; top: 50px; left: 16px; right: 16px; z-index: 8; display: flex; align-items: center; gap: 10px; }
+      .hud .rank { font-size: 10px; letter-spacing: 1.5px; color: #7fb0e0; text-transform: uppercase; }
+      .hud .rank b { display: block; color: #fff; font-size: 13px; letter-spacing: .3px; text-transform: none; font-weight: 600; }
+      .hud .coins { margin-left: auto; display: flex; align-items: center; gap: 6px; background: rgba(255,200,60,.14); border: 1px solid rgba(255,200,60,.3);
+        padding: 5px 11px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #ffd166; }
+      .prog { position: absolute; top: 84px; left: 16px; right: 16px; z-index: 8; height: 4px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+      .prog i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width .5s ease; }
 
-      /* severity readout */
-      .sev { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-      .sev .lbl { font-size: 10.5px; letter-spacing: 1.2px; color: #88a8d0; text-transform: uppercase; }
-      .sev .val { font-size: 14px; font-weight: 700; letter-spacing: .5px; }
-      .sev .meter { height: 6px; border-radius: 99px; background: rgba(255,255,255,.08); margin-top: 8px; overflow: hidden; }
-      .sev .meter i { display: block; height: 100%; width: 20%; border-radius: 99px; transition: width .45s ease, background .45s ease; }
+      /* ── bottom card ── */
+      .stage { position: absolute; left: 14px; right: 14px; bottom: 22px; z-index: 7;
+        background: rgba(8,20,40,.66); border: 1px solid rgba(120,180,255,.16); border-radius: 22px;
+        padding: 18px 17px 17px; backdrop-filter: blur(12px); box-shadow: 0 24px 60px -24px #000; }
+      .eyebrow { font-size: 10px; letter-spacing: 2.5px; color: #5fd0ff; text-transform: uppercase; font-weight: 600; }
+      .qt { font-size: 20px; font-weight: 600; margin-top: 5px; line-height: 1.2; }
+      .qs { font-size: 12.5px; color: #8fb0d8; margin-top: 5px; line-height: 1.45; }
 
-      /* pain slider */
-      .pain { margin: 13px 0 14px; }
-      .pain .head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #9fc0e8; letter-spacing: .4px; margin-bottom: 8px; }
-      .pain .head b { color: #ff6b6b; font-weight: 700; font-size: 13px; }
-      input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 99px; outline: none;
-        background: linear-gradient(90deg, #f87171 var(--p,0%), rgba(255,255,255,.1) var(--p,0%)); }
-      input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-        background: #fff; box-shadow: 0 0 10px rgba(248,113,113,.8); cursor: pointer; }
+      .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+      .chip { border: 1px solid rgba(120,180,255,.2); background: rgba(12,28,54,.6); color: #cfe0f5; border-radius: 13px;
+        padding: 12px 10px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; text-align: left; transition: all .16s; }
+      .chip b { display: block; font-size: 11px; color: #7fa0c8; font-weight: 500; margin-top: 2px; }
+      .chip.on { border-color: #38bdf8; background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(56,189,248,.05)); color: #fff; }
 
-      /* posture selector */
-      .dock { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-      .dock button { border: 1px solid rgba(120,180,255,.18); background: rgba(10,26,50,.55); color: #bcd6f5;
-        border-radius: 13px; padding: 9px 2px 7px; font-family: inherit; font-size: 11px; font-weight: 500;
-        display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: all .18s; }
-      .dock button .ic { font-size: 17px; line-height: 1; }
-      .dock button:active { transform: scale(.95); }
-      .dock button.on { border-color: #38bdf8; background: linear-gradient(180deg, rgba(56,189,248,.24), rgba(56,189,248,.05)); color: #fff; box-shadow: 0 0 20px -6px rgba(56,189,248,.6); }
+      .slider { margin-top: 18px; }
+      .slider .val { display: flex; align-items: baseline; gap: 6px; }
+      .slider .val b { font-size: 34px; font-weight: 700; letter-spacing: -.5px; }
+      .slider .val span { font-size: 13px; color: #8fb0d8; }
+      .slider .tag { float: right; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; margin-top: 8px; }
+      input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 99px; outline: none; margin-top: 14px;
+        background: linear-gradient(90deg, #38bdf8 var(--p,0%), rgba(255,255,255,.1) var(--p,0%)); }
+      input[type=range].pain { background: linear-gradient(90deg, #f87171 var(--p,0%), rgba(255,255,255,.1) var(--p,0%)); }
+      input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+        background: #fff; box-shadow: 0 0 10px rgba(56,189,248,.7); cursor: pointer; }
+      .scale { display: flex; justify-content: space-between; font-size: 10.5px; color: #6f93bd; margin-top: 7px; }
 
-      .hint { position: absolute; left: 0; right: 0; bottom: 200px; z-index: 4; text-align: center; font-size: 10px; color: #5f82ac; letter-spacing: .3px; pointer-events: none; }
-      .fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 40px; color: #9fc0e8; z-index: 9; }
+      .postdock { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 15px; }
+      .postdock button { border: 1px solid rgba(120,180,255,.18); background: rgba(10,26,50,.55); color: #bcd6f5;
+        border-radius: 12px; padding: 9px 2px 7px; font-family: inherit; font-size: 10.5px; font-weight: 500;
+        display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: all .16s; }
+      .postdock button .ic { font-size: 16px; } .postdock button:active { transform: scale(.95); }
+      .postdock button.on { border-color: #38bdf8; background: linear-gradient(180deg, rgba(56,189,248,.24), rgba(56,189,248,.05)); color: #fff; }
+
+      .cta { margin-top: 17px; width: 100%; border: 0; border-radius: 15px; padding: 15px; cursor: pointer;
+        font-family: inherit; font-size: 15px; font-weight: 700; color: #02121f;
+        background: linear-gradient(120deg, #5fd0ff, #818cf8); display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .12s, filter .2s; }
+      .cta:active { transform: scale(.98); } .cta:disabled { opacity: .4; }
+      .cta.ghost { background: transparent; color: #9fc0e8; border: 1px solid rgba(120,180,255,.2); margin-top: 9px; }
+      .back { position: absolute; top: 0; right: 0; background: 0; border: 0; color: #6f93bd; font-size: 12px; cursor: pointer; padding: 4px; }
+
+      /* ── reward toast ── */
+      .toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%) translateY(-12px); z-index: 20; opacity: 0;
+        display: flex; align-items: center; gap: 8px; background: rgba(255,200,60,.16); border: 1px solid rgba(255,200,60,.45);
+        color: #ffd166; font-weight: 700; font-size: 13px; padding: 8px 15px; border-radius: 99px; backdrop-filter: blur(8px); pointer-events: none; transition: all .35s; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      /* ── video popup ── */
+      .vmask { position: absolute; inset: 0; z-index: 30; background: rgba(2,8,20,.72); backdrop-filter: blur(8px);
+        display: none; align-items: center; justify-content: center; padding: 20px; }
+      .vmask.show { display: flex; }
+      .vcard { width: 100%; border-radius: 22px; overflow: hidden; background: #07142a; border: 1px solid rgba(120,180,255,.2); box-shadow: 0 30px 70px -20px #000; }
+      .vscreen { position: relative; height: 230px; overflow: hidden;
+        background: radial-gradient(120% 90% at 50% 10%, #0d3a6e, #04132b 70%); display: grid; place-items: center; }
+      .vscreen .vspine { font-size: 88px; filter: drop-shadow(0 0 24px rgba(95,208,255,.6)); }
+      .vscreen .scan { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #5fd0ff, transparent); top: 10%; animation: vscan 2.4s ease-in-out infinite; }
+      @keyframes vscan { 0%{top:8%} 100%{top:88%} }
+      .vplay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(3,12,28,.4); cursor: pointer; }
+      .vplay .btn { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.92); display: grid; place-items: center; font-size: 24px; color: #06224a; box-shadow: 0 8px 30px rgba(95,208,255,.5); }
+      .vcap { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 16px 14px; background: linear-gradient(0deg, rgba(3,10,24,.95), transparent); }
+      .vcap .tag { font-size: 10px; letter-spacing: 2px; color: #5fd0ff; text-transform: uppercase; }
+      .vcap b { display: block; font-size: 16px; font-weight: 600; margin-top: 3px; }
+      .vbody { padding: 14px 16px 16px; }
+      .vbody p { font-size: 12.5px; color: #b8cce6; line-height: 1.5; min-height: 54px; }
+      .vbar { height: 4px; border-radius: 99px; background: rgba(255,255,255,.1); margin: 12px 0; overflow: hidden; }
+      .vbar i { display: block; height: 100%; width: 0; background: #5fd0ff; }
+      .vtime { display: flex; justify-content: space-between; font-size: 10.5px; color: #6f93bd; margin-bottom: 12px; font-variant-numeric: tabular-nums; }
+
+      /* ── results badges ── */
+      .scoreRing { display: grid; place-items: center; position: relative; margin: 6px 0 4px; }
+      .scoreRing .num { position: absolute; text-align: center; }
+      .scoreRing .num b { font-size: 40px; font-weight: 800; letter-spacing: -1px; }
+      .scoreRing .num span { display: block; font-size: 9.5px; letter-spacing: 2px; color: #8fb0d8; text-transform: uppercase; }
+      .factors { display: grid; gap: 7px; margin-top: 4px; }
+      .factor { display: flex; align-items: center; gap: 9px; font-size: 12px; }
+      .factor .fb { flex: 1; height: 5px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+      .factor .fb i { display: block; height: 100%; border-radius: 99px; }
+      .factor .fn { width: 64px; color: #9fc0e8; } .factor .fv { width: 30px; text-align: right; color: #cfe0f5; font-variant-numeric: tabular-nums; }
+      .reco { font-size: 12px; color: #b8cce6; line-height: 1.5; margin-top: 12px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.2); border-radius: 13px; padding: 11px 13px; }
+      .reco b { color: #fff; }
+      .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #ffd166; background: rgba(255,200,60,.14); border: 1px solid rgba(255,200,60,.35); padding: 5px 11px; border-radius: 99px; margin-top: 4px; }
+      .fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 40px; color: #9fc0e8; z-index: 40; }
     </style>
   </head>
   <body>
     <canvas id="c"></canvas>
 
-    <div class="top">
-      <div class="eyebrow">Spine Lab · 3D</div>
-      <h1 id="poseTitle">Standing</h1>
-      <p id="poseDesc">Neutral alignment · healthy curves</p>
+    <div class="hud">
+      <div class="rank">Spine Rank<b id="rankName">Novice</b></div>
+      <div class="coins">🪙 <span id="coins">0</span></div>
     </div>
+    <div class="prog"><i id="progBar"></i></div>
 
-    <div class="hint">Drag to rotate the spine</div>
+    <div class="toast" id="toast"></div>
 
-    <div class="panel">
-      <div class="sev">
-        <div>
-          <div class="lbl">Spine load · severity</div>
-          <div class="meter"><i id="sevBar" style="width:20%;background:#34d399"></i></div>
+    <div class="stage" id="stage"></div>
+
+    <!-- video popup -->
+    <div class="vmask" id="vmask">
+      <div class="vcard">
+        <div class="vscreen">
+          <div class="scan"></div>
+          <div class="vspine" id="vEmoji">🦴</div>
+          <div class="vplay" id="vplay"><div class="btn">▶</div></div>
+          <div class="vcap"><span class="tag">Spine Lab · Clinic</span><b id="vTitle">Why we ask</b></div>
         </div>
-        <div class="val" id="sevVal" style="color:#34d399">LOW</div>
-      </div>
-
-      <div class="pain">
-        <div class="head"><span>PAIN INTENSITY</span><b id="painVal">0 / 10</b></div>
-        <input id="pain" type="range" min="0" max="10" value="0" step="1" />
-      </div>
-
-      <div class="dock" id="dock">
-        <button data-pose="standing" class="on"><span class="ic">🧍</span>Stand</button>
-        <button data-pose="walking"><span class="ic">🚶</span>Walk</button>
-        <button data-pose="sitting"><span class="ic">🪑</span>Sit</button>
-        <button data-pose="lifting"><span class="ic">🏋️</span>Lift</button>
+        <div class="vbody">
+          <p id="vText"></p>
+          <div class="vbar"><i id="vProg"></i></div>
+          <div class="vtime"><span id="vCur">0:00</span><span id="vDur">0:18</span></div>
+          <button class="cta" id="vDone" disabled>Watch to continue</button>
+        </div>
       </div>
     </div>
 
     <div class="fallback" id="fallback">3D needs WebGL — try a modern browser.</div>
 
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
-      }
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
     </script>
     <script type="module">
       import * as THREE from 'three'
       import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
+      /* ════════════════ 3D SPINE ════════════════ */
       const canvas = document.getElementById('c')
       let renderer
-      try {
-        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
-      } catch (e) {
-        document.getElementById('fallback').style.display = 'grid'
-        throw e
-      }
+      try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }) }
+      catch (e) { document.getElementById('fallback').style.display = 'grid'; throw e }
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 
       const scene = new THREE.Scene()
       const DIST = 16
       const camera = new THREE.PerspectiveCamera(32, 390 / 844, 0.1, 100)
       camera.position.set(0, 0, DIST)
-
       const controls = new OrbitControls(camera, canvas)
-      controls.enableDamping = true
-      controls.dampingFactor = 0.08
-      controls.enablePan = false
-      controls.enableZoom = false
+      controls.enableDamping = true; controls.dampingFactor = 0.08
+      controls.enablePan = false; controls.enableZoom = false
       controls.target.set(0, 0, 0)
-      controls.minPolarAngle = Math.PI * 0.32
-      controls.maxPolarAngle = Math.PI * 0.68
+      controls.minPolarAngle = Math.PI * 0.32; controls.maxPolarAngle = Math.PI * 0.68
       let idle = true
       canvas.addEventListener('pointerdown', () => (idle = false))
 
-      // lighting
       scene.add(new THREE.AmbientLight(0x90b0ff, 0.6))
       const key = new THREE.DirectionalLight(0xcfe6ff, 1.3); key.position.set(4, 9, 9); scene.add(key)
       const rim = new THREE.PointLight(0x3ea0ff, 40, 50); rim.position.set(-7, 3, -5); scene.add(rim)
       const warm = new THREE.PointLight(0xffc060, 22, 34); warm.position.set(4, -2, 7); scene.add(warm)
 
-      // rig (pivot at origin) → spine
       const rig = new THREE.Group(); scene.add(rig)
       const spine = new THREE.Group(); rig.add(spine)
+      const N = 24
+      const BONE = new THREE.Color(0xeaeee8), RED = new THREE.Color(0xff3326)
 
-      const N = 24 // sacrum(0) → skull base(N-1)
-      const BONE = new THREE.Color(0xeaeee8)
-      const RED = new THREE.Color(0xff3326)
-
-      // one anatomically-suggestive vertebra: body + disc + spinous + 2 transverse processes
       function makeVertebra() {
         const g = new THREE.Group()
         const mat = new THREE.MeshStandardMaterial({ color: BONE.clone(), emissive: new THREE.Color(0x16486e), emissiveIntensity: 0.4, roughness: 0.45, metalness: 0.05 })
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.26, 18), mat)
-        body.scale.z = 0.85
-        g.add(body)
-        const disc = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.34, 0.34, 0.1, 18),
-          new THREE.MeshStandardMaterial({ color: 0x4a86c8, emissive: 0x1d4e86, emissiveIntensity: 0.5, transparent: true, opacity: 0.55, roughness: 0.3 }),
-        )
-        disc.position.y = 0.18
-        g.add(disc)
-        const spinous = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.62, 8), mat)
-        spinous.rotation.x = -Math.PI / 2.1
-        spinous.position.set(0, -0.02, -0.52)
-        g.add(spinous)
-        for (const sx of [-1, 1]) {
-          const tp = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.05, 0.4, 6), mat)
-          tp.rotation.z = Math.PI / 2
-          tp.position.set(sx * 0.42, 0, -0.12)
-          g.add(tp)
-        }
-        g.userData.mats = [mat] // body+spinous+transverse share `mat`; disc excluded from pain tint
-        return g
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.26, 18), mat); body.scale.z = 0.85; g.add(body)
+        const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.1, 18), new THREE.MeshStandardMaterial({ color: 0x4a86c8, emissive: 0x1d4e86, emissiveIntensity: 0.5, transparent: true, opacity: 0.55, roughness: 0.3 }))
+        disc.position.y = 0.18; g.add(disc)
+        const spinous = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.62, 8), mat); spinous.rotation.x = -Math.PI / 2.1; spinous.position.set(0, -0.02, -0.52); g.add(spinous)
+        for (const sx of [-1, 1]) { const tp = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.05, 0.4, 6), mat); tp.rotation.z = Math.PI / 2; tp.position.set(sx * 0.42, 0, -0.12); g.add(tp) }
+        g.userData.mat = mat; return g
       }
+      const verts = []; for (let i = 0; i < N; i++) { const v = makeVertebra(); verts.push(v); spine.add(v) }
 
-      const verts = []
-      for (let i = 0; i < N; i++) { const v = makeVertebra(); verts.push(v); spine.add(v) }
+      const haloTex = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 128; const x = cv.getContext('2d'); const g = x.createRadialGradient(64,64,0,64,64,64); g.addColorStop(0,'rgba(255,60,40,.9)'); g.addColorStop(.4,'rgba(255,60,40,.35)'); g.addColorStop(1,'rgba(255,60,40,0)'); x.fillStyle = g; x.fillRect(0,0,128,128); return new THREE.CanvasTexture(cv) })()
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.setScalar(3); spine.add(halo)
 
-      // red pain halo at the epicentre
-      const haloTex = (() => {
-        const cv = document.createElement('canvas'); cv.width = cv.height = 128
-        const ctx = cv.getContext('2d'); const grd = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
-        grd.addColorStop(0, 'rgba(255,60,40,0.9)'); grd.addColorStop(0.4, 'rgba(255,60,40,0.35)'); grd.addColorStop(1, 'rgba(255,60,40,0)')
-        ctx.fillStyle = grd; ctx.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(cv)
-      })()
-      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }))
-      halo.scale.setScalar(3)
-      spine.add(halo)
-
-      // postures (control points sacrum→skull, z+ = anterior). load = lumbar load 0..1
       const POSES = {
-        standing: { title: 'Standing', desc: 'Neutral alignment · healthy curves', load: 0.2,
-          pts: [[0,0,-0.2],[0,1.6,0.55],[0,3.3,0.05],[0,5.1,-0.55],[0,6.9,-0.1],[0,8.3,0.45],[0,9.1,0.5]] },
-        walking: { title: 'Walking', desc: 'Curves load rhythmically with each step', load: 0.34,
-          pts: [[0,0,-0.2],[0,1.6,0.5],[0,3.3,0.05],[0,5.1,-0.5],[0,6.9,-0.05],[0,8.3,0.5],[0,9.1,0.55]] },
-        sitting: { title: 'Sitting', desc: 'Lumbar curve flattens · disc pressure rises', load: 0.62,
-          pts: [[0,0,-0.35],[0,1.5,-0.05],[0,3.0,-0.35],[0,4.6,-0.7],[0,6.0,-0.45],[0,7.2,0.15],[0,7.9,0.55]] },
-        lifting: { title: 'Lifting', desc: 'Rounded flexion · peak load at L4–L5', load: 0.95,
-          pts: [[0,0,-0.3],[0,1.4,-0.15],[0,2.7,0.5],[0,3.5,1.6],[0,3.95,2.9],[0,4.05,4.2],[0,3.95,5.2]] },
+        standing: { pts: [[0,0,-0.2],[0,1.6,0.55],[0,3.3,0.05],[0,5.1,-0.55],[0,6.9,-0.1],[0,8.3,0.45],[0,9.1,0.5]] },
+        walking:  { pts: [[0,0,-0.2],[0,1.6,0.5],[0,3.3,0.05],[0,5.1,-0.5],[0,6.9,-0.05],[0,8.3,0.5],[0,9.1,0.55]] },
+        sitting:  { pts: [[0,0,-0.35],[0,1.5,-0.05],[0,3.0,-0.35],[0,4.6,-0.7],[0,6.0,-0.45],[0,7.2,0.15],[0,7.9,0.55]] },
+        lifting:  { pts: [[0,0,-0.3],[0,1.4,-0.15],[0,2.7,0.5],[0,3.5,1.6],[0,3.95,2.9],[0,4.05,4.2],[0,3.95,5.2]] },
       }
+      let current = POSES.standing.pts.map((p) => p.slice()), target = POSES.standing.pts.map((p) => p.slice())
+      let activePose = 'standing', pain = 0, scanT = -1
+      const PAIN_T = 0.22, up = new THREE.Vector3(0, 1, 0)
 
-      let current = POSES.standing.pts.map((p) => p.slice())
-      let target = POSES.standing.pts.map((p) => p.slice())
-      let activePose = 'standing'
-      let pain = 0 // 0..1
-      const PAIN_T = 0.22 // lumbar epicentre
-
-      const up = new THREE.Vector3(0, 1, 0)
-      function buildCurve() {
-        return new THREE.CatmullRomCurve3(current.map((p) => new THREE.Vector3(p[0], p[1], p[2])), false, 'catmullrom', 0.5)
-      }
       function layout() {
-        const curve = buildCurve()
-        let haloPos = null
+        const curve = new THREE.CatmullRomCurve3(current.map((p) => new THREE.Vector3(p[0], p[1], p[2])), false, 'catmullrom', 0.5)
+        let hp = null
         for (let i = 0; i < N; i++) {
-          const t = i / (N - 1)
-          const pos = curve.getPoint(t)
-          const tan = curve.getTangent(t).normalize()
-          verts[i].position.copy(pos)
-          verts[i].quaternion.setFromUnitVectors(up, tan)
-          const s = THREE.MathUtils.lerp(0.66, 0.32, t) * (1 + 0.1 * Math.sin(t * Math.PI))
-          verts[i].scale.set(s, s, s)
-          // pain redness — gaussian around epicentre, widening with intensity
+          const t = i / (N - 1), pos = curve.getPoint(t), tan = curve.getTangent(t).normalize()
+          verts[i].position.copy(pos); verts[i].quaternion.setFromUnitVectors(up, tan)
+          const s = THREE.MathUtils.lerp(0.66, 0.32, t) * (1 + 0.1 * Math.sin(t * Math.PI)); verts[i].scale.set(s, s, s)
           const sigma = 0.07 + 0.1 * pain
-          const red = pain * Math.exp(-((t - PAIN_T) ** 2) / (2 * sigma * sigma))
-          const col = BONE.clone().lerp(RED, Math.min(1, red * 1.25))
-          const m = verts[i].userData.mats[0]
-          m.color.copy(col)
-          m.emissive.copy(new THREE.Color(0x16486e)).lerp(RED, Math.min(1, red))
-          m.emissiveIntensity = 0.4 + red * 1.6
-          if (Math.abs(t - PAIN_T) < 0.03) haloPos = pos
+          let red = pain * Math.exp(-((t - PAIN_T) ** 2) / (2 * sigma * sigma))
+          if (scanT >= 0) red = Math.max(red, Math.exp(-((t - scanT) ** 2) / 0.004) * 0.9) // scan highlight
+          const col = BONE.clone().lerp(RED, Math.min(1, red * 1.25)); const m = verts[i].userData.mat
+          m.color.copy(col); m.emissive.copy(new THREE.Color(0x16486e)).lerp(RED, Math.min(1, red)); m.emissiveIntensity = 0.4 + red * 1.6
+          if (Math.abs(t - PAIN_T) < 0.03) hp = pos
         }
-        if (haloPos) halo.position.copy(haloPos)
+        if (hp) halo.position.copy(hp)
       }
       layout()
+      { const box = new THREE.Box3().setFromObject(spine); const h = box.max.y - box.min.y; const vh = 2 * DIST * Math.tan((camera.fov * Math.PI) / 360); rig.scale.setScalar((0.6 * vh) / h) }
 
-      // fit the (tallest) standing spine into ~60% of the view, centred
-      {
-        const box = new THREE.Box3().setFromObject(spine)
-        const h = box.max.y - box.min.y
-        const viewH = 2 * DIST * Math.tan((camera.fov * Math.PI) / 360)
-        rig.scale.setScalar((0.62 * viewH) / h)
-      }
-
-      // ambient particles
-      const pGeo = new THREE.BufferGeometry()
-      const pArr = new Float32Array(80 * 3)
-      for (let i = 0; i < 80; i++) { pArr[i*3]=(Math.random()-0.5)*14; pArr[i*3+1]=(Math.random()-0.5)*12; pArr[i*3+2]=(Math.random()-0.5)*10-1 }
+      const pGeo = new THREE.BufferGeometry(), pArr = new Float32Array(80 * 3)
+      for (let i = 0; i < 80; i++) { pArr[i*3]=(Math.random()-.5)*14; pArr[i*3+1]=(Math.random()-.5)*12; pArr[i*3+2]=(Math.random()-.5)*10-1 }
       pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3))
-      scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x6fb6ff, size: 0.05, transparent: true, opacity: 0.5, depthWrite: false })))
+      scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x6fb6ff, size: .05, transparent: true, opacity: .5, depthWrite: false })))
 
-      // ── UI ──
-      const dock = document.getElementById('dock')
-      const poseTitle = document.getElementById('poseTitle')
-      const poseDesc = document.getElementById('poseDesc')
-      const sevVal = document.getElementById('sevVal')
-      const sevBar = document.getElementById('sevBar')
-      const painEl = document.getElementById('pain')
-      const painVal = document.getElementById('painVal')
-
-      function severity() {
-        // Spine Severity (SSS-flavoured): posture load + reported pain
-        const s = Math.min(1, 0.5 * POSES[activePose].load + 0.7 * pain)
-        let label = 'LOW', color = '#34d399'
-        if (s >= 0.7) { label = 'HIGH'; color = '#f87171' }
-        else if (s >= 0.42) { label = 'MODERATE'; color = '#fbbf24' }
-        sevVal.textContent = label; sevVal.style.color = color
-        sevBar.style.width = Math.round(20 + s * 80) + '%'; sevBar.style.background = color
-      }
-      function setPose(name) {
-        const P = POSES[name]; if (!P) return
-        activePose = name; target = P.pts.map((p) => p.slice())
-        poseTitle.textContent = P.title; poseDesc.textContent = P.desc
-        ;[...dock.children].forEach((b) => b.classList.toggle('on', b.dataset.pose === name))
-        severity()
-      }
-      dock.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setPose(b.dataset.pose) })
-      painEl.addEventListener('input', () => {
-        pain = +painEl.value / 10
-        painVal.textContent = painEl.value + ' / 10'
-        painEl.style.setProperty('--p', painEl.value * 10 + '%')
-        severity()
-      })
-
-      // ── animate ──
       const clock = new THREE.Clock()
       function tick() {
-        const dt = Math.min(clock.getDelta(), 0.05); const t = clock.elapsedTime
-        let moving = false
-        for (let i = 0; i < current.length; i++)
-          for (let j = 0; j < 3; j++) {
-            const d = target[i][j] - current[i][j]
-            if (Math.abs(d) > 0.0008) { current[i][j] += d * Math.min(1, dt * 4.5); moving = true }
-          }
+        const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime
+        for (let i = 0; i < current.length; i++) for (let j = 0; j < 3; j++) { const d = target[i][j] - current[i][j]; if (Math.abs(d) > .0008) current[i][j] += d * Math.min(1, dt * 4.5) }
         layout()
-        // center vertebrae on the rig pivot
-        let cx = 0, cy = 0, cz = 0
-        for (const p of current) { cx += p[0]; cy += p[1]; cz += p[2] }
-        const n = current.length
-        spine.position.set(-cx / n, -cy / n, -cz / n)
-        // idle: gentle oscillation around a 3/4 view (never edge-on)
+        let cx=0,cy=0,cz=0; for (const p of current){cx+=p[0];cy+=p[1];cz+=p[2]}; const n=current.length
+        spine.position.set(-cx/n, -cy/n, -cz/n)
         if (idle) rig.rotation.y = 0.22 + Math.sin(t * 0.4) * 0.32
         rig.rotation.z = activePose === 'walking' ? Math.sin(t * 2.4) * 0.05 : rig.rotation.z + (0 - rig.rotation.z) * Math.min(1, dt * 4)
-        // pulsing pain halo
-        halo.material.opacity = pain * (0.5 + 0.25 * Math.sin(t * 3))
-        halo.scale.setScalar((2.2 + pain * 2.4) * (1 + 0.06 * Math.sin(t * 3)))
-        controls.update()
-        renderer.render(scene, camera)
-        requestAnimationFrame(tick)
+        halo.material.opacity = pain * (0.5 + 0.25 * Math.sin(t * 3)); halo.scale.setScalar((2.2 + pain * 2.4) * (1 + .06 * Math.sin(t * 3)))
+        if (scanT >= 0) { scanT += dt * 0.5; if (scanT > 1.05) scanT = -1 }
+        controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick)
       }
       tick()
-      severity()
-
       function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix() }
       addEventListener('resize', resize); resize()
+
+      // spine API for the flow
+      const Spine = {
+        pose(name) { if (POSES[name]) { activePose = name; target = POSES[name].pts.map((p) => p.slice()) } },
+        pain(v) { pain = Math.max(0, Math.min(1, v)) },
+        scan() { scanT = 0 },
+      }
+
+      /* ════════════════ FLOW + GAMIFICATION ════════════════ */
+      const stage = document.getElementById('stage')
+      const coinsEl = document.getElementById('coins'), rankEl = document.getElementById('rankName'), progEl = document.getElementById('progBar'), toastEl = document.getElementById('toast')
+      const data = { age: '31-45', pain: 0, sitting: 8, walking: 30, exercise: 2, sleep: 7 }
+      let coins = 0, stepIdx = 0
+
+      const RANKS = [[0,'Novice'],[60,'Aware'],[140,'Engaged'],[230,'Spine Pro']]
+      function rankFor(c) { let r = 'Novice'; for (const [t, n] of RANKS) if (c >= t) r = n; return r }
+      function award(n, label) {
+        coins += n; coinsEl.textContent = coins; rankEl.textContent = rankFor(coins)
+        toastEl.innerHTML = `🪙 +${n} <span style="opacity:.8;font-weight:500">${label}</span>`
+        toastEl.classList.add('show'); clearTimeout(award._t); award._t = setTimeout(() => toastEl.classList.remove('show'), 1800)
+      }
+
+      // educational video popups
+      const VIDEOS = {
+        intro: { emoji: '🧬', title: 'Meet your spine', dur: 7, coins: 50,
+          text: 'Your spine has 24 moving vertebrae and 23 discs. Most back pain is built slowly by daily habits — how you sit, move, lift and sleep. This 2-minute scan maps yours.' },
+        sitting: { emoji: '🪑', title: 'The sitting load', dur: 8, coins: 50,
+          text: 'Sitting raises disc pressure up to 40% vs standing, and flattens the protective lumbar curve. Hours add up — prolonged sitting is the #1 modifiable back-pain driver.' },
+        lift: { emoji: '🏋️', title: 'Lifting & flexion', dur: 6, coins: 40,
+          text: 'Bending the spine to lift concentrates force at L4–L5. Hinge at the hips and keep the lumbar curve — your discs will thank you in 20 years.' },
+      }
+      const vmask = document.getElementById('vmask'), vplay = document.getElementById('vplay'), vProg = document.getElementById('vProg'),
+        vDone = document.getElementById('vDone'), vCur = document.getElementById('vCur'), vDur = document.getElementById('vDur'),
+        vTitle = document.getElementById('vTitle'), vText = document.getElementById('vText'), vEmoji = document.getElementById('vEmoji')
+      let vTimer = null, vOnDone = null, vCfg = null
+      function fmt(s) { return '0:' + String(Math.floor(s)).padStart(2, '0') }
+      function openVideo(key, onDone) {
+        vCfg = VIDEOS[key]; vOnDone = onDone
+        vTitle.textContent = vCfg.title; vText.textContent = vCfg.text; vEmoji.textContent = vCfg.emoji
+        vDur.textContent = fmt(vCfg.dur); vCur.textContent = '0:00'; vProg.style.width = '0%'
+        vplay.style.display = 'grid'; vDone.disabled = true; vDone.textContent = 'Watch to continue'
+        vmask.classList.add('show')
+      }
+      vplay.onclick = () => {
+        vplay.style.display = 'none'; let p = 0
+        clearInterval(vTimer)
+        vTimer = setInterval(() => {
+          p += 0.18; const frac = Math.min(1, p / vCfg.dur)
+          vProg.style.width = frac * 100 + '%'; vCur.textContent = fmt(Math.min(vCfg.dur, p))
+          if (frac >= 1) { clearInterval(vTimer); vDone.disabled = false; vDone.textContent = `Continue · +${vCfg.coins} 🪙` }
+        }, 180)
+      }
+      vDone.onclick = () => {
+        if (vDone.disabled) return
+        clearInterval(vTimer); vmask.classList.remove('show'); award(vCfg.coins, 'Knowledge')
+        const cb = vOnDone; vOnDone = null; if (cb) cb()
+      }
+
+      const tagFor = (label, color) => `<span class="tag" style="background:${color}22;color:${color}">${label}</span>`
+
+      // ── steps ──
+      const STEPS = [
+        { // 0 intro
+          pose: 'standing', prog: 0,
+          render: () => `<div class="eyebrow">Spine Lab · Assessment</div>
+            <div class="qt">Meet your spine</div>
+            <div class="qs">A 2-minute guided lab scan that maps how your daily habits load your spine — then gives you one Spine Score to track.</div>
+            <button class="cta" id="go">▶ Begin assessment</button>`,
+          init: () => { document.getElementById('go').onclick = () => openVideo('intro', next) },
+        },
+        { // 1 age
+          pose: 'standing', prog: 0.1, back: true,
+          render: () => `<div class="eyebrow">Step 1 · You</div><div class="qt">Your age group</div>
+            <div class="qs">Spine resilience and recovery shift with age — we calibrate your score to your decade.</div>
+            <div class="chips" id="ages">
+              ${[['20-30','Peak recovery'],['31-45','Building load'],['46-60','Protect & maintain'],['60+','Preserve mobility']].map(([a,d])=>`<button class="chip ${data.age===a?'on':''}" data-a="${a}">${a} yrs<b>${d}</b></button>`).join('')}
+            </div><button class="cta" id="go">Continue</button>`,
+          init: () => {
+            document.querySelectorAll('#ages .chip').forEach((b) => b.onclick = () => { data.age = b.dataset.a; document.querySelectorAll('#ages .chip').forEach(x=>x.classList.toggle('on', x===b)) })
+            document.getElementById('go').onclick = () => { award(10, 'Profile'); next() }
+          },
+        },
+        { // 2 pain
+          pose: 'standing', prog: 0.22, back: true,
+          render: () => `<div class="eyebrow">Step 2 · Symptoms</div><div class="qt">Current back pain</div>
+            <div class="qs">Drag the slider — watch the pain map light up on your lumbar spine.</div>
+            <div class="slider"><div class="val"><b id="pv">${data.pain}</b><span>/ 10</span></div>
+            <input class="pain" type="range" min="0" max="10" step="1" id="sl" value="${data.pain}">
+            <div class="scale"><span>No pain</span><span>Severe</span></div></div>
+            <button class="cta" id="go">Continue</button>`,
+          init: () => {
+            const sl = document.getElementById('sl'), pv = document.getElementById('pv')
+            const upd = () => { data.pain = +sl.value; pv.textContent = sl.value; sl.style.setProperty('--p', sl.value*10+'%'); Spine.pain(sl.value/10) }
+            sl.oninput = upd; upd()
+            document.getElementById('go').onclick = () => { award(10, 'Symptoms'); next() }
+          },
+        },
+        { // 3 sitting
+          pose: 'sitting', prog: 0.36, back: true, video: 'sitting',
+          render: () => `<div class="eyebrow">Step 3 · Daily habits</div><div class="qt">Sitting hours / day</div>
+            <div class="qs">Desk, commute, screen time — total hours seated.</div>
+            <div class="slider"><div class="val"><b id="v">${data.sitting}</b><span>hrs</span></div>${riskTag('sitting',data.sitting)}
+            <input type="range" min="2" max="14" step="1" id="sl" value="${data.sitting}">
+            <div class="scale"><span>2h</span><span>14h</span></div></div><button class="cta" id="go">Continue</button>`,
+          init: () => bindSlider('sitting', (v)=>v+' hrs'),
+        },
+        { // 4 walking
+          pose: 'walking', prog: 0.5, back: true,
+          render: () => `<div class="eyebrow">Step 4 · Daily habits</div><div class="qt">Walking minutes / day</div>
+            <div class="qs">Walking is the simplest spinal mobiliser — it pumps the discs.</div>
+            <div class="slider"><div class="val"><b id="v">${data.walking}</b><span>min</span></div>${riskTag('walking',data.walking)}
+            <input type="range" min="0" max="90" step="5" id="sl" value="${data.walking}">
+            <div class="scale"><span>0</span><span>90 min</span></div></div><button class="cta" id="go">Continue</button>`,
+          init: () => bindSlider('walking', (v)=>v+' min'),
+        },
+        { // 5 exercise
+          pose: 'standing', prog: 0.62, back: true,
+          render: () => `<div class="eyebrow">Step 5 · Daily habits</div><div class="qt">Exercise days / week</div>
+            <div class="qs">Strength & mobility work that supports the spine.</div>
+            <div class="slider"><div class="val"><b id="v">${data.exercise}</b><span>days</span></div>${riskTag('exercise',data.exercise)}
+            <input type="range" min="0" max="7" step="1" id="sl" value="${data.exercise}">
+            <div class="scale"><span>0</span><span>7 days</span></div></div><button class="cta" id="go">Continue</button>`,
+          init: () => bindSlider('exercise', (v)=>v+' days'),
+        },
+        { // 6 sleep
+          pose: 'standing', prog: 0.74, back: true,
+          render: () => `<div class="eyebrow">Step 6 · Daily habits</div><div class="qt">Sleep hours / night</div>
+            <div class="qs">Tissue repair and disc rehydration happen overnight.</div>
+            <div class="slider"><div class="val"><b id="v">${data.sleep}</b><span>hrs</span></div>${riskTag('sleep',data.sleep)}
+            <input type="range" min="3" max="10" step="1" id="sl" value="${data.sleep}">
+            <div class="scale"><span>3h</span><span>10h</span></div></div><button class="cta" id="go">Continue</button>`,
+          init: () => bindSlider('sleep', (v)=>v+' hrs'),
+        },
+        { // 7 posture explore
+          pose: 'standing', prog: 0.84, back: true,
+          render: () => `<div class="eyebrow">Step 7 · Load demo</div><div class="qt">See how posture loads you</div>
+            <div class="qs">Tap each posture — the 3D spine bends and the lumbar load changes.</div>
+            <div class="postdock" id="pd">
+              ${[['standing','🧍','Stand'],['walking','🚶','Walk'],['sitting','🪑','Sit'],['lifting','🏋️','Lift']].map(([k,i,l])=>`<button data-p="${k}" class="${k==='standing'?'on':''}"><span class="ic">${i}</span>${l}</button>`).join('')}
+            </div><button class="cta" id="go">Run my spine scan →</button>`,
+          init: () => {
+            let seen = new Set(['standing'])
+            document.querySelectorAll('#pd button').forEach((b) => b.onclick = () => {
+              Spine.pose(b.dataset.p); document.querySelectorAll('#pd button').forEach(x=>x.classList.toggle('on', x===b))
+              if (!seen.has(b.dataset.p)) { seen.add(b.dataset.p); if (seen.size === 4) award(20, 'Explorer') }
+            })
+            document.getElementById('go').onclick = () => { Spine.pose('standing'); next() }
+          },
+        },
+        { // 8 scan
+          pose: 'standing', prog: 0.93,
+          render: () => `<div class="eyebrow">Step 8 · Analysis</div><div class="qt" id="scanT">Scanning your spine…</div>
+            <div class="qs" id="scanS">Mapping 24 vertebrae against the Spine Severity System.</div>`,
+          init: () => {
+            Spine.pain(0); Spine.scan()
+            const lines = ['Reading cervical curve…','Checking thoracic load…','Analysing lumbar discs (L1–L5)…','Cross-referencing your habits…','Computing Spine Score…']
+            let i = 0; const s = document.getElementById('scanS')
+            const iv = setInterval(() => { s.textContent = lines[i] || lines[lines.length-1]; i++ }, 700)
+            setTimeout(() => { clearInterval(iv); award(30, 'Scan complete'); next() }, 3600)
+          },
+        },
+        { // 9 results
+          pose: 'standing', prog: 1, results: true,
+          render: () => {
+            const r = computeScore(data)
+            Spine.pain(Math.min(1, r.risk / 100 * 1.1))
+            const ring = 326, off = ring - (r.score / 100) * ring
+            return `<div class="eyebrow">Your result</div>
+              <div class="scoreRing">
+                <svg width="150" height="150" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="${r.color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${ring}" stroke-dashoffset="${ring}" id="ring"/>
+                </svg>
+                <div class="num"><b id="bigScore" style="color:${r.color}">0</b><span>Spine Score</span></div>
+              </div>
+              <div style="text-align:center">${tagFor(r.band, r.color)}<div class="badge" id="rankBadge" style="margin-left:6px">🏅 ${rankFor(coins)} · ${coins}🪙</div></div>
+              <div class="factors" style="margin-top:14px">${r.factors.map(f=>`<div class="factor"><span class="fn">${f.n}</span><div class="fb"><i style="width:${f.pct}%;background:${f.c}"></i></div><span class="fv">${f.v}</span></div>`).join('')}</div>
+              <div class="reco"><b>${r.recoTitle}.</b> ${r.reco}</div>
+              <button class="cta ghost" id="again">↻ Retake assessment</button>`
+          },
+          init: () => {
+            const r = computeScore(data)
+            const ring = document.getElementById('ring'), off = 326 - (r.score / 100) * 326
+            requestAnimationFrame(() => { ring.style.transition = 'stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1)'; ring.style.strokeDashoffset = off })
+            const big = document.getElementById('bigScore'); let n = 0; const iv = setInterval(() => { n += 2; if (n >= r.score) { n = r.score; clearInterval(iv) } big.textContent = n }, 24)
+            if (!STEPS[9]._rewarded) { STEPS[9]._rewarded = true; award(40, 'Assessment done') }
+            const rb = document.getElementById('rankBadge'); if (rb) rb.innerHTML = `🏅 ${rankFor(coins)} · ${coins}🪙`
+            document.getElementById('again').onclick = () => { stepIdx = 0; Spine.pain(0); render() }
+          },
+        },
+      ]
+
+      function riskTag(key, v) {
+        const r = factorRisk(key, v)
+        const c = r < 0.34 ? '#34d399' : r < 0.67 ? '#fbbf24' : '#f87171'
+        const l = r < 0.34 ? 'LOW' : r < 0.67 ? 'MODERATE' : 'HIGH'
+        return `<span class="tag" id="rt" style="background:${c}22;color:${c}">${l}</span>`
+      }
+      function bindSlider(key, fmtv) {
+        const sl = document.getElementById('sl'), v = document.getElementById('v')
+        const upd = () => {
+          data[key] = +sl.value; v.textContent = sl.value; sl.style.setProperty('--p', ((sl.value - sl.min) / (sl.max - sl.min)) * 100 + '%')
+          const r = factorRisk(key, +sl.value), c = r < 0.34 ? '#34d399' : r < 0.67 ? '#fbbf24' : '#f87171', l = r < 0.34 ? 'LOW' : r < 0.67 ? 'MODERATE' : 'HIGH'
+          const rt = document.getElementById('rt'); if (rt) { rt.textContent = l; rt.style.background = c + '22'; rt.style.color = c }
+        }
+        sl.oninput = upd; upd()
+        const cur = STEPS[stepIdx]
+        document.getElementById('go').onclick = () => {
+          award(10, 'Logged')
+          if (cur.video && !cur._watched) { cur._watched = true; openVideo(cur.video, next) } else next()
+        }
+      }
+
+      // ── SSS scoring (Dr. Sharma's Spine Severity System) ──
+      function factorRisk(key, v) {
+        if (key === 'sitting') return v < 6 ? 0.1 : v <= 7 ? 0.35 : v <= 9 ? 0.6 : 0.95
+        if (key === 'walking') return v >= 45 ? 0.08 : v >= 20 ? 0.45 : 0.92
+        if (key === 'exercise') return v >= 3 ? 0.08 : v >= 1 ? 0.5 : 0.92
+        if (key === 'sleep') return v >= 7 && v <= 9 ? 0.08 : v >= 5 ? 0.45 : 0.9
+        if (key === 'pain') return v / 10
+        return 0
+      }
+      function computeScore(d) {
+        const w = { sitting: 22, walking: 18, exercise: 18, sleep: 16, pain: 26 }
+        let risk = 0
+        for (const k in w) risk += factorRisk(k, d[k]) * w[k]
+        if (d.age === '46-60') risk *= 1.08; else if (d.age === '60+') risk *= 1.18
+        risk = Math.min(100, risk)
+        const score = Math.max(2, Math.round(100 - risk))
+        let band = 'LOW RISK', color = '#34d399'
+        if (score < 48) { band = 'HIGH RISK'; color = '#f87171' } else if (score < 72) { band = 'MODERATE RISK'; color = '#fbbf24' }
+        const fc = (r) => (r < 0.34 ? '#34d399' : r < 0.67 ? '#fbbf24' : '#f87171')
+        const factors = [
+          { n: 'Sitting', v: d.sitting + 'h', pct: 100 - factorRisk('sitting', d.sitting) * 100, c: fc(factorRisk('sitting', d.sitting)) },
+          { n: 'Walking', v: d.walking + 'm', pct: 100 - factorRisk('walking', d.walking) * 100, c: fc(factorRisk('walking', d.walking)) },
+          { n: 'Exercise', v: d.exercise + 'd', pct: 100 - factorRisk('exercise', d.exercise) * 100, c: fc(factorRisk('exercise', d.exercise)) },
+          { n: 'Sleep', v: d.sleep + 'h', pct: 100 - factorRisk('sleep', d.sleep) * 100, c: fc(factorRisk('sleep', d.sleep)) },
+          { n: 'Pain', v: d.pain + '/10', pct: 100 - factorRisk('pain', d.pain) * 100, c: fc(factorRisk('pain', d.pain)) },
+        ]
+        // top offender → recommendation
+        const order = ['sitting', 'walking', 'exercise', 'sleep'].sort((a, b) => factorRisk(b, d[b]) - factorRisk(a, d[a]))
+        const top = order[0]
+        const RECO = {
+          sitting: ['Break up sitting', 'Stand or walk 2–3 minutes every 30 minutes to halve cumulative disc load.'],
+          walking: ['Walk more', 'Aim for 45+ minutes daily — it rehydrates discs and restores the lumbar curve.'],
+          exercise: ['Build spinal support', 'Add 3 days/week of core & hip-hinge strength to offload the discs.'],
+          sleep: ['Protect recovery', 'Target 7–8 hours — overnight is when discs rehydrate and tissues repair.'],
+        }
+        return { score, band, color, risk, factors, recoTitle: RECO[top][0], reco: RECO[top][1] }
+      }
+
+      // ── flow control ──
+      function render() {
+        const s = STEPS[stepIdx]
+        Spine.pose(s.pose || 'standing')
+        progEl.style.width = (s.prog * 100) + '%'
+        stage.innerHTML = (s.back ? '<button class="back" id="bk">‹ Back</button>' : '') + s.render()
+        if (s.back) document.getElementById('bk').onclick = back
+        s.init && s.init()
+      }
+      function next() { if (stepIdx < STEPS.length - 1) { stepIdx++; render() } }
+      function back() { if (stepIdx > 0) { stepIdx--; render() } }
+      render()
     </script>
   </body>
 </html>

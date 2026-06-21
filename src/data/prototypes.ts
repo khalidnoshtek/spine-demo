@@ -87,12 +87,12 @@ export const PROTOTYPES: Prototype[] = [
   {
     id: 'spine3d',
     name: 'Spine 3D',
-    tagline: 'A real spine that bends with your posture',
-    category: 'WebGL · 3D',
+    tagline: 'Guided 3D assessment → your Spine Score',
+    category: 'WebGL · Assessment',
     kind: 'live',
     accent: '#5fd0ff',
     src: '/prototypes/spine3d/index.html',
-    build: 'Three.js · interactive',
+    build: 'Three.js · SSS scoring',
   },
   {
     id: 'spinelab',
