@@ -20,8 +20,9 @@
       .hud { position: absolute; top: 50px; left: 16px; right: 16px; z-index: 8; display: flex; align-items: center; gap: 10px; }
       .hud .rank { font-size: 10px; letter-spacing: 1.5px; color: #7fb0e0; text-transform: uppercase; }
       .hud .rank b { display: block; color: #fff; font-size: 13px; letter-spacing: .3px; text-transform: none; font-weight: 600; }
-      .hud .coins { margin-left: auto; display: flex; align-items: center; gap: 6px; background: rgba(255,200,60,.14); border: 1px solid rgba(255,200,60,.3);
-        padding: 5px 11px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #ffd166; }
+      .hud .coins { margin-left: auto; display: flex; align-items: center; gap: 6px; background: rgba(56,189,248,.12); border: 1px solid rgba(95,208,255,.32);
+        padding: 5px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #7fd3ff; }
+      .hud .coins .pts { font-size: 9.5px; letter-spacing: 1px; color: #5b8fc9; font-weight: 600; }
       .prog { position: absolute; top: 84px; left: 16px; right: 16px; z-index: 8; height: 4px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
       .prog i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width .5s ease; }
 
@@ -73,8 +74,8 @@
 
       /* ── reward toast ── */
       .toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%) translateY(-12px); z-index: 20; opacity: 0;
-        display: flex; align-items: center; gap: 8px; background: rgba(255,200,60,.16); border: 1px solid rgba(255,200,60,.45);
-        color: #ffd166; font-weight: 700; font-size: 13px; padding: 8px 15px; border-radius: 99px; backdrop-filter: blur(8px); pointer-events: none; transition: all .35s; }
+        display: flex; align-items: center; gap: 8px; background: rgba(56,189,248,.16); border: 1px solid rgba(95,208,255,.5);
+        color: #7fd3ff; font-weight: 700; font-size: 13px; padding: 8px 15px; border-radius: 99px; backdrop-filter: blur(8px); pointer-events: none; transition: all .35s; }
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
       /* ── video popup ── */
@@ -110,7 +111,7 @@
       .factor .fn { width: 64px; color: #9fc0e8; } .factor .fv { width: 30px; text-align: right; color: #cfe0f5; font-variant-numeric: tabular-nums; }
       .reco { font-size: 12px; color: #b8cce6; line-height: 1.5; margin-top: 12px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.2); border-radius: 13px; padding: 11px 13px; }
       .reco b { color: #fff; }
-      .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #ffd166; background: rgba(255,200,60,.14); border: 1px solid rgba(255,200,60,.35); padding: 5px 11px; border-radius: 99px; margin-top: 4px; }
+      .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #aab6ff; background: rgba(129,140,248,.16); border: 1px solid rgba(129,140,248,.4); padding: 5px 11px; border-radius: 99px; margin-top: 4px; }
       .fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 40px; color: #9fc0e8; z-index: 40; }
     </style>
   </head>
@@ -119,7 +120,7 @@
 
     <div class="hud">
       <div class="rank">Spine Rank<b id="rankName">Novice</b></div>
-      <div class="coins">🪙 <span id="coins">0</span></div>
+      <div class="coins">✦ <span id="coins">0</span> <span class="pts">PTS</span></div>
     </div>
     <div class="prog"><i id="progBar"></i></div>
 
@@ -267,7 +268,7 @@
       function rankFor(c) { let r = 'Novice'; for (const [t, n] of RANKS) if (c >= t) r = n; return r }
       function award(n, label) {
         coins += n; coinsEl.textContent = coins; rankEl.textContent = rankFor(coins)
-        toastEl.innerHTML = `🪙 +${n} <span style="opacity:.8;font-weight:500">${label}</span>`
+        toastEl.innerHTML = `✦ +${n} <span style="opacity:.8;font-weight:500">${label}</span>`
         toastEl.classList.add('show'); clearTimeout(award._t); award._t = setTimeout(() => toastEl.classList.remove('show'), 1800)
       }
 
@@ -298,7 +299,7 @@
         vTimer = setInterval(() => {
           p += 0.18; const frac = Math.min(1, p / vCfg.dur)
           vProg.style.width = frac * 100 + '%'; vCur.textContent = fmt(Math.min(vCfg.dur, p))
-          if (frac >= 1) { clearInterval(vTimer); vDone.disabled = false; vDone.textContent = `Continue · +${vCfg.coins} 🪙` }
+          if (frac >= 1) { clearInterval(vTimer); vDone.disabled = false; vDone.textContent = `Continue · +${vCfg.coins} pts` }
         }, 180)
       }
       vDone.onclick = () => {
@@ -455,7 +456,7 @@
                 </svg>
                 <div class="num"><b id="bigScore" style="color:${r.color}">0</b><span>Spine Score</span></div>
               </div>
-              <div style="text-align:center">${tagFor(r.band, r.color)}<div class="badge" id="rankBadge" style="margin-left:6px">🏅 ${rankFor(coins)} · ${coins}🪙</div></div>
+              <div style="text-align:center">${tagFor(r.band, r.color)}<div class="badge" id="rankBadge" style="margin-left:6px">◆ ${rankFor(coins)} · ${coins} pts</div></div>
               <div class="factors" style="margin-top:14px">${r.factors.map(f=>`<div class="factor"><span class="fn">${f.n}</span><div class="fb"><i style="width:${f.pct}%;background:${f.c}"></i></div><span class="fv">${f.v}</span></div>`).join('')}</div>
               <div class="reco"><b>${r.recoTitle}.</b> ${r.reco}</div>
               <button class="cta ghost" id="again">↻ Retake assessment</button>`
@@ -466,7 +467,7 @@
             requestAnimationFrame(() => { ring.style.transition = 'stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1)'; ring.style.strokeDashoffset = off })
             const big = document.getElementById('bigScore'); let n = 0; const iv = setInterval(() => { n += 2; if (n >= r.score) { n = r.score; clearInterval(iv) } big.textContent = n }, 24)
             if (!STEPS[stepIdx]._rewarded) { STEPS[stepIdx]._rewarded = true; award(40, 'Assessment done') }
-            const rb = document.getElementById('rankBadge'); if (rb) rb.innerHTML = `🏅 ${rankFor(coins)} · ${coins}🪙`
+            const rb = document.getElementById('rankBadge'); if (rb) rb.innerHTML = `◆ ${rankFor(coins)} · ${coins} pts`
             document.getElementById('again').onclick = () => { stepIdx = 0; Spine.pain(0); render() }
           },
         },
