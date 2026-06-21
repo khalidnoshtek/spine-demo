@@ -10,7 +10,7 @@ const POS: Record<string, { col: string; row: string }> = {
   quest: { col: '4', row: '1' },
   spineos: { col: '5', row: '1' },
   spineiq: { col: '3', row: '2' },
-  bloom: { col: '4', row: '2' },
+  spine3d: { col: '4', row: '2' },
   spinelab: { col: '5', row: '2' },
 }
 
