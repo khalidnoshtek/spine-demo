@@ -173,6 +173,7 @@
       const warm = new THREE.PointLight(0xffc060, 22, 34); warm.position.set(4, -2, 7); scene.add(warm)
 
       const rig = new THREE.Group(); scene.add(rig)
+      rig.position.y = 1.5 // lift the spine above the bottom card so the lumbar/red-zone stays visible
       const spine = new THREE.Group(); rig.add(spine)
       const N = 24
       const BONE = new THREE.Color(0xeaeee8), RED = new THREE.Color(0xff3326)
@@ -219,7 +220,7 @@
         if (hp) halo.position.copy(hp)
       }
       layout()
-      { const box = new THREE.Box3().setFromObject(spine); const h = box.max.y - box.min.y; const vh = 2 * DIST * Math.tan((camera.fov * Math.PI) / 360); rig.scale.setScalar((0.6 * vh) / h) }
+      { const box = new THREE.Box3().setFromObject(spine); const h = box.max.y - box.min.y; const vh = 2 * DIST * Math.tan((camera.fov * Math.PI) / 360); rig.scale.setScalar((0.5 * vh) / h) }
 
       const pGeo = new THREE.BufferGeometry(), pArr = new Float32Array(80 * 3)
       for (let i = 0; i < 80; i++) { pArr[i*3]=(Math.random()-.5)*14; pArr[i*3+1]=(Math.random()-.5)*12; pArr[i*3+2]=(Math.random()-.5)*10-1 }
